@@ -18,15 +18,24 @@
 int mins = 0;
 int secs = 0;
 
-//Programmable times for control events, expressed in minutes from the time0 
-int time1  = 1;
-int time2  = 2;
-int time3  = 3;
-int time4  = 4;
-int time5  = 5;
-int time6  = 6;
-int time7  = 7;
+boolean valve_1_state = 0;
+boolean valve_2_state = 0;
+boolean valve_3_state = 0;
+boolean valve_4_state = 0;
+//boolean pump_state = 0;
 
+//Programmable times for control events, expressed in minutes from the time0 
+//Input time for fruit trees on valve 1
+int valve_1_on  = 300;
+int valve_1_off = 360;
+//Input time for cypress on valve 2
+int valve_2_on  = 1;
+int valve_2_off = 120;
+//Input time for vegetable garden on valve 3
+int valve_3_on  = 540;
+int valve_3_off = 600;
+int valve_4_on  = 9999;
+int valve_4_off = 9999;
 
 //--------------------------------------------------------------------------------------------------
 //The section below assigns digital Arduino pins to named variables
@@ -58,54 +67,130 @@ void loop() {
   
   //printing time to serial monitor for observation
   Serial.println((String)"Time:" + mins + " m, " + secs +" s");
-
-  //When the second counter is 0, check the for the following cases
-  if (secs == 0){
-    if(mins == time1){
-          digitalWrite(pumpRelayPin, HIGH);
-          Serial.println("\n pump turned on\n");
+//------------------------------------------------------------------------------------
+  if(mins == valve_1_on){
+    if (secs == 0){
+        digitalWrite(valveRelayPin1, HIGH); 
+        Serial.println("\n***valve-1 turned on\n"); 
+        valve_1_state = 1;
     }
-    
-    if(mins == time2){
-          digitalWrite(valveRelayPin1, HIGH); 
-          Serial.println("\n***valve-1 turned on\n");
-    }
-    
-    if(mins == time3){
-          digitalWrite(valveRelayPin1, LOW); 
-          digitalWrite(valveRelayPin2, HIGH); 
-          Serial.println("\n***valve-1 turned off, valve-2 turned on\n");          
-    }
-    
-    if(mins == time4){
-          digitalWrite(valveRelayPin2, LOW); 
-          digitalWrite(valveRelayPin3, HIGH); 
-          Serial.println("\n***valve-2 turned off, valve-3 turned on\n");    
-    }
-          
-    if(mins == time5){
-          digitalWrite(valveRelayPin3, LOW); 
-          digitalWrite(valveRelayPin4, HIGH); 
-          Serial.println("\n***valve-3 turned off, valve-4 turned on\n");          
-    }
-     
-    if(mins == time6){
-          digitalWrite(valveRelayPin4, LOW); 
-          Serial.println("\n***valve-4 turned off\n");
-    }
-     
-    if(mins == time4){
-          digitalWrite(pumpRelayPin, LOW); 
-          Serial.println("\n***pump turned off\n");                                                  
+    if (secs == 40){
+        digitalWrite(pumpRelayPin, HIGH);
+        Serial.println("\n***pump turned on\n"); 
     }
   }
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_1_off){
+    if (secs == 0){  
+      
+      valve_1_state = 0;
+      
+      if ((valve_1_state == 0) && (valve_2_state == 0) && (valve_3_state == 0) && (valve_4_state == 0)) {
+        digitalWrite(pumpRelayPin, LOW);
+        Serial.println("\n***pump turned off\n");
+      }
+       
+      digitalWrite(valveRelayPin1, LOW); 
+      Serial.println("\n***valve-1 turned off\n"); 
+    }
+  } 
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_2_on){
+    if (secs == 0){
+        digitalWrite(valveRelayPin2, HIGH); 
+        Serial.println("\n***valve-2 turned on\n"); 
+        valve_2_state = 1;
+    }
+    if (secs == 40){
+        digitalWrite(pumpRelayPin, HIGH);
+        Serial.println("\n***pump turned on\n"); 
+    }
+  }
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_2_off){
+    if (secs == 0){  
+      
+      valve_2_state = 0;
+      
+      if ((valve_1_state == 0) && (valve_2_state == 0) && (valve_3_state == 0) && (valve_4_state == 0)) {
+        digitalWrite(pumpRelayPin, LOW);
+        Serial.println("\n***pump turned off\n");
+      }
+       
+      digitalWrite(valveRelayPin2, LOW); 
+      Serial.println("\n***valve-2 turned off\n"); 
+    }
+  }
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_3_on){
+    if (secs == 0){
+        digitalWrite(valveRelayPin3, HIGH); 
+        Serial.println("\n***valve-3 turned on\n"); 
+        valve_3_state = 1;
+    }
+    if (secs == 40){
+        digitalWrite(pumpRelayPin, HIGH);
+        Serial.println("\n***pump turned on\n"); 
+    }
+  }
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_3_off){
+    if (secs == 0){  
+      
+      valve_3_state = 0;
+      
+      if ((valve_1_state == 0) && (valve_2_state == 0) && (valve_3_state == 0) && (valve_4_state == 0)) {
+        digitalWrite(pumpRelayPin, LOW);
+        Serial.println("\n***pump turned off\n");
+      }
+       
+      digitalWrite(valveRelayPin3, LOW); 
+      Serial.println("\n***valve-3 turned off\n"); 
+    }
+  } 
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_4_on){
+    if (secs == 0){
+        digitalWrite(valveRelayPin4, HIGH); 
+        Serial.println("\n***valve-4 turned on\n"); 
+        valve_4_state = 1;
+    }
+    if (secs == 40){
+        digitalWrite(pumpRelayPin, HIGH);
+        Serial.println("\n***pump turned on\n"); 
+    }
+  }
+
+//------------------------------------------------------------------------------------
+  if(mins == valve_4_off){
+    if (secs == 0){  
+      
+      valve_4_state = 0;
+      
+      if ((valve_1_state == 0) && (valve_2_state == 0) && (valve_3_state == 0) && (valve_4_state == 0)) {
+        digitalWrite(pumpRelayPin, LOW);
+        Serial.println("\n***pump turned off\n");
+      }
+       
+      digitalWrite(valveRelayPin4, LOW); 
+      Serial.println("\n***valve-4 turned off\n"); 
+    }
+  }
+
+
 }
 
 //--------------------------------------------------------------------------------------------------
 //This is a function for counting minutes
 int timer(){
 
-  //waiting 1000 ms = 1s
+  //waiting 10 ms = 1s
   delay(1000);
 
   //after 59s increment minute counter and reset second counter      
