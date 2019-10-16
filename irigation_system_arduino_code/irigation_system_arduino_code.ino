@@ -6,6 +6,9 @@ int h = 10;
 int mins = 0;
 int secs = 0;
 
+//----------------
+String newTime = "";    // string to hold serial input
+//----------------
 
 boolean valve_1_state = 0;
 boolean valve_2_state = 0;
@@ -23,7 +26,7 @@ int valve_1_off_h = 14;
 int valve_1_off_mins = 30;
 //Valve 2 --- cypress on
 int valve_2_on_h  = 10;
-int valve_2_on_mins  = 0;
+int valve_2_on_mins  = 1;
 int valve_2_off_h = 11;
 int valve_2_off_mins = 0;
 //Valve 3 --- vegetable garden
@@ -63,11 +66,28 @@ void loop() {
 
   //printing time to serial monitor for observation
   Serial.println((String)"Time:" + h + " h, " + mins + " m, " + secs + " s");
+  // In order to read a serial input and write a new time the function described at 
+  // https://www.arduino.cc/en/Tutorial.StringToIntExample was used
   
-
-
-
-
+  // Read serial input:
+  while (Serial.available() > 0) {
+    int inChar = Serial.read();
+    if (isDigit(inChar)) {
+      // convert the incoming byte to a char and add it to the string:
+      newTime += (char)inChar;
+    }
+    // if you get a newline, print the string, then the string's value:
+    if (inChar == '\n') {
+      Serial.print("Value entered:");
+      Serial.println(newTime.toInt());
+      Serial.print("New time is: ");
+      Serial.println(newTime);
+      Serial.print("hours");
+      h = newTime.toInt();
+      // clear the string for new input:
+      newTime = "";
+    }
+  }
 
 
 
@@ -208,7 +228,7 @@ void loop() {
 int timer() {
 
   //waiting 1000 ms = 1s this is just a freaking comment!!!
-  delay(10);
+  delay(1000);
 
   // increment hours
   if (h == 23 && mins == 59 && secs == 59) {
