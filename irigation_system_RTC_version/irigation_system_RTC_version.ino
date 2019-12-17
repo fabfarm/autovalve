@@ -3,6 +3,8 @@
 
 #include <virtuabotixRTC.h> //RTC DS1302 library
 
+#define LEDPin 13 //LED output pin asignments
+
 // Creation of the Real Time Clock Object
 virtuabotixRTC myRTC(7, 6, 5);  //Wiring of the RTC (CLK,DAT,RST)
 
@@ -20,7 +22,7 @@ boolean valve_1_state = 0;
 boolean valve_2_state = 0;
 boolean valve_3_state = 0;
 boolean valve_4_state = 0;
-//boolean pump_state = 0;
+//boolean pump_state = 0; //disabled in original file
 
 //---------------------------------------------------------------------------------------------------
 //Programmable times for control events, expressed in hours and minutes from the time0
@@ -58,12 +60,13 @@ int pumpRelay   = 8;
 //The function 'setup()' gets executed only once upon power-up/reset of Arduino
 void setup() {
   Serial.begin(9600);           //  setup serial
-  Serial.println("Power-on. Serial Monitor initiated!");          // debug value
+  Serial.println("Power-on. Serial Monitor initiated! RTC version.");          // debug value
   pinMode(valveRelay1, OUTPUT); // defining the relayPin as digital output
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
   pinMode(valveRelay4, OUTPUT);
   pinMode(pumpRelay, OUTPUT);
+  pinMode(LEDPin, OUTPUT);  // Use LED indicator to test
 
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
@@ -75,7 +78,7 @@ void setup() {
 void loop() {
 
   //printing time to serial monitor for observation
-  Serial.println((String)"Time:" + h + " h, " + mins + " m, " + secs + " s");
+  //Serial.println((String)"Time:" + h + " h, " + mins + " m, " + secs + " s");
   // In order to read a serial input and write a new time the function described at 
   // https://www.arduino.cc/en/Tutorial.StringToIntExample was used
   
@@ -214,13 +217,13 @@ void loop() {
   }
 
   //calling function for updating the time variables - secs, mins and hour
-  timer();
+  //timer();
 
-
-  
+//--------------------------------------------------------------------------------------------------
+// This allows for the update of variables for time or accessing the individual elements.                //|
   myRTC.updateTime();                                                                                    //| 
                                                                                                          //| 
-  // Start printing elements as individuals                                                                //|   
+// Start printing elements as individuals                                                                //|   
   Serial.print("Current Date / Time: ");                                                                 //| 
   Serial.print(myRTC.dayofmonth);                                                                        //| 
   Serial.print("/");                                                                                     //| 
@@ -232,7 +235,31 @@ void loop() {
   Serial.print(":");                                                                                     //| 
   Serial.print(myRTC.minutes);                                                                           //| 
   Serial.print(":");                                                                                     //| 
-  Serial.println(myRTC.seconds); 
+  Serial.println(myRTC.seconds);                                                                         //| 
+                                                                                                         //| 
+// Delay so the program doesn't print non-stop                                                           //| 
+  delay(2000);   
+
+int timeDiff, lastRead = 0;                                                                            
+                                                                                         
+  timeDiff = myRTC.seconds - lastRead;                                                                   
+  if ( timeDiff > 3 )   
+  {                                                                                
+    digitalWrite(LEDPin, HIGH);
+    printf("LED is ON");                                                                       
+  } 
+  else  
+  {                                                                                            
+    digitalWrite(LEDPin, HIGH);                                                                    
+  }                                                                                                  
+  lastRead = myRTC.seconds;                                                                              
+                                                                                                      
+// Delay so the program doesn't print non-stop                                                           
+  delay( 2000 );  
+
+
+
+//--------------------------------------------------------------------------------------------------
 
 }
 
@@ -250,6 +277,12 @@ void loop() {
 //    }
 //  }
 //}
+
+
+
+
+
+
 
 //--------------------------------------------------------------------------------------------------
 //This is a function for counting hours and minutes
