@@ -1,9 +1,7 @@
-//This is the code for the Arduino based control board for the automated irrigation system
+//Automated Arduino-based pump relay control using Real Time Clock DS1302
 //--------------------------------------------------------------------------------------------------
 
 #include <virtuabotixRTC.h> //RTC DS1302 library
-
-#define LEDPin 13 //LED output pin asignments
 
 // Creation of the Real Time Clock Object
 virtuabotixRTC myRTC(7, 6, 5);  //Wiring of the RTC (CLK,DAT,RST)
@@ -13,6 +11,9 @@ virtuabotixRTC myRTC(7, 6, 5);  //Wiring of the RTC (CLK,DAT,RST)
 int h = 10;
 int mins = 0;
 int secs = 0;
+
+int timeDiff, lastReadHour; //declaring variables for time difference and previous time recorded to calculate time elapsed                                                                         
+boolean readState = 0;
 
 //----------------
 String newTime = "";    // string to hold serial input
@@ -47,6 +48,10 @@ int valve_4_on_h  = 99999;
 int valve_4_on_mins  = 99999;
 int valve_4_off_h = 99999;
 int valve_4_off_mins = 99999;
+
+//Pump --- relay time
+int pumpRelayTime = 30000; // default value for pump operation time is 30 seconds or 30000 ms.
+
 //--------------------------------------------------------------------------------------------------
 //The section below assigns digital Arduino pins to named variables
 // for better readability of code
@@ -60,17 +65,37 @@ int pumpRelay   = 8;
 //The function 'setup()' gets executed only once upon power-up/reset of Arduino
 void setup() {
   Serial.begin(9600);           //  setup serial
-  Serial.println("Power-on. Serial Monitor initiated! RTC version.");          // debug value
+  Serial.println("Power ON. Serial Monitor initiated. RTC version.");          // debug value
   pinMode(valveRelay1, OUTPUT); // defining the relayPin as digital output
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
   pinMode(valveRelay4, OUTPUT);
   pinMode(pumpRelay, OUTPUT);
-  pinMode(LEDPin, OUTPUT);  // Use LED indicator to test
-
+  
+  // initialize digital pin LED_BUILTIN as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  myRTC.setDS1302Time(00, 41, 18, 1, 16, 12, 2019);
+  myRTC.setDS1302Time(10, 18, 14, 2, 17, 12, 2019);
+  
+  myRTC.updateTime(); // update of variables for time or accessing the individual elements.
+  
+  // Start printing elements as individuals                                                                 
+  Serial.print("Current Date / Time: ");                                                                  
+  Serial.print(myRTC.dayofmonth);                                                                         
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.month);                                                                              
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.year);                                                                               
+  Serial.print("  ");                                                                                     
+  Serial.print(myRTC.hours);                                                                              
+  Serial.print(":");                                                                                      
+  Serial.print(myRTC.minutes);                                                                            
+  Serial.print(":");                                                                                      
+  Serial.println(myRTC.seconds); 
+  
+  lastReadHour = myRTC.hours - 1; // decrement by 1 so run the pump immediately when the program starts
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -212,59 +237,59 @@ void loop() {
       Serial.println("\n***pump turned off\n");
     }
 
-    digitalWrite(valveRelay4, LOW);
+    digitalWrite(pumpRelay, LOW);
     Serial.println("\n***valve-4 turned off\n");
   }
 
   //calling function for updating the time variables - secs, mins and hour
   //timer();
 
-//--------------------------------------------------------------------------------------------------
-// This allows for the update of variables for time or accessing the individual elements.                //|
-  myRTC.updateTime();                                                                                    //| 
-                                                                                                         //| 
-// Start printing elements as individuals                                                                //|   
-  Serial.print("Current Date / Time: ");                                                                 //| 
-  Serial.print(myRTC.dayofmonth);                                                                        //| 
-  Serial.print("/");                                                                                     //| 
-  Serial.print(myRTC.month);                                                                             //| 
-  Serial.print("/");                                                                                     //| 
-  Serial.print(myRTC.year);                                                                              //| 
-  Serial.print("  ");                                                                                    //| 
-  Serial.print(myRTC.hours);                                                                             //| 
-  Serial.print(":");                                                                                     //| 
-  Serial.print(myRTC.minutes);                                                                           //| 
-  Serial.print(":");                                                                                     //| 
-  Serial.println(myRTC.seconds);                                                                         //| 
-                                                                                                         //| 
-// Delay so the program doesn't print non-stop                                                           //| 
-  delay(2000);   
-
-int timeDiff, lastRead = 0;                                                                            
-                                                                                         
-  timeDiff = myRTC.seconds - lastRead;                                                                   
-  if ( timeDiff > 3 )   
-  {                                                                                
-    digitalWrite(LEDPin, HIGH);
-    printf("LED is ON");                                                                       
-  } 
-  else  
-  {                                                                                            
-    digitalWrite(LEDPin, HIGH);                                                                    
-  }                                                                                                  
-  lastRead = myRTC.seconds;                                                                              
-                                                                                                      
-// Delay so the program doesn't print non-stop                                                           
-  delay( 2000 );  
-
-
-
-//--------------------------------------------------------------------------------------------------
-
+//--------------------------------------------------------------------------------------------------                
+  myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
+                                                                                                          
+// Start printing elements as individuals  
+/*                                                                 
+  Serial.print("Current Date / Time: ");                                                                  
+  Serial.print(myRTC.dayofmonth);                                                                         
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.month);                                                                              
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.year);                                                                               
+  Serial.print("  ");                                                                                     
+  Serial.print(myRTC.hours);                                                                              
+  Serial.print(":");                                                                                      
+  Serial.print(myRTC.minutes);                                                                            
+  Serial.print(":");                                                                                      
+  Serial.println(myRTC.seconds);                                                                          
+                                                                                                                                                              
+  delay(2000);  // delay of 2 seconds so the program doesn't print non-stop 
+*/                                                                                      
+    if (myRTC.hours != lastReadHour)
+    {
+      timeDiff = myRTC.hours - lastReadHour;  //additional check, but hour difference should already exist                                                              
+      timeDiff = abs(timeDiff); //calculates absolute value of hour difference
+      
+      Serial.print("RTC hour: "); //display the hour from RTC module for debugging
+      Serial.println(myRTC.hours);
+      Serial.print("Hour difference: "); //display the hour difference for debugging
+      Serial.println(timeDiff);
+      
+      if (timeDiff >= 1) //conditional check if at least one hour difference
+      {                                                                                
+        digitalWrite(pumpRelay, HIGH);  //turns on the pump relay
+        digitalWrite(LED_BUILTIN, HIGH);   //turns on the on-board LED pin on Arduino UNO board, used for testing
+        Serial.println("*** Pump turned ON for 30 secs ***");
+        delay(pumpRelayTime); //delay of 30 seconds by default
+        digitalWrite(pumpRelay, LOW);
+        digitalWrite(LED_BUILTIN, LOW);  //turns off the on-board LED pin on Arduino UNO board, used for testing
+        Serial.println("*** Pump turned OFF ***");                                                                      
+      }                                                                                                
+      lastReadHour = myRTC.hours; //stores current hour value as previous hour value                                                                           
+    }
 }
 
 // Function to turn on valve
-//void turnValveOn(valve) {
+//void turnValveOn() {
 //  if (h == valve_4_on_h && mins == valve_4_on_mins) {
 //    if (secs == 0) {
 //      digitalWrite(valveRelay4, HIGH);
@@ -277,40 +302,3 @@ int timeDiff, lastRead = 0;
 //    }
 //  }
 //}
-
-
-
-
-
-
-
-//--------------------------------------------------------------------------------------------------
-//This is a function for counting hours and minutes
-int timer() {
-
-  //waiting 1000 ms = 1s this is just a freaking comment!!!
-  delay(1000);
-
-  // increment hours
-  if (h == 23 && mins == 59 && secs == 59) {
-    h = 0;
-  }
-  else if (mins == 59 && secs == 59) {
-    h = h + 1;
-  }
-
-  // increment minutes
-  if (mins == 59 && secs == 59) {
-    mins = 0;
-  }
-  else if (secs == 59) {
-    mins = mins + 1;
-  }
-  
-  // seconds
-  if (secs == 59) {
-    secs = 0;
-  }
-  else
-    secs = secs + 1;
-}
