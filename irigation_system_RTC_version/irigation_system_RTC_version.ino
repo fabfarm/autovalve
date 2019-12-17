@@ -20,23 +20,23 @@ void setup() {
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
   //myRTC.setDS1302Time(10, 57, 14, 2, 17, 12, 2019);
-  myRTC.setDS1302Time(00, 00, 20, 2, 17, 12, 2019);
+  myRTC.setDS1302Time(00, 00, 20, 2, 17, 12, 2019); //the seconds and minutes are set to zero as the code executes every hour
   
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
-  Serial.print("Current Date / Time: ");                                                                  
+  Serial.print("Current Date: ");                                                                  
   Serial.print(myRTC.dayofmonth);                                                                         
   Serial.print("/");                                                                                      
   Serial.print(myRTC.month);                                                                              
   Serial.print("/");                                                                                      
-  Serial.print(myRTC.year);                                                                               
-  Serial.print("  ");                                                                                     
-  Serial.print(myRTC.hours);                                                                              
-  Serial.print(":");                                                                                      
-  Serial.print(myRTC.minutes);                                                                            
-  Serial.print(":");                                                                                      
-  Serial.println(myRTC.seconds); 
+  Serial.println(myRTC.year);
+  Serial.print("Current Hour (24-hour clock): ");                                                                                      
+  Serial.println(myRTC.hours);                          
+  //Serial.print(":");                                                                                      
+  //Serial.print(myRTC.minutes);                                                                            
+  //Serial.print(":");                                                                                      
+  //Serial.println(myRTC.seconds); 
   
   lastReadHour = myRTC.hours - 1; //decrement initial value by 1 to run the pump immediately when the program starts
 }
@@ -65,22 +65,27 @@ void loop() {
   {
       timeDiff = myRTC.hours - lastReadHour;  //additional check, but hour difference should already exist                                                              
       timeDiff = abs(timeDiff); //calculates absolute value of hour difference
-      
-      Serial.print("RTC hour: "); //display the hour from RTC module for debugging
-      Serial.println(myRTC.hours);
-      Serial.print("Hour difference: "); //display the hour difference for debugging
+
+      //for debugging
+      //Serial.print("Current RTC hour: "); //display the hour from RTC module
+      //Serial.println(myRTC.hours);
+      Serial.print("Last recorded hour: "); //display the hour from RTC module
+      Serial.println(lastReadHour);
+      Serial.print("Hour difference: "); //display the hour difference
       Serial.println(timeDiff);
       
       if (timeDiff >= 1) //conditional check if at least one hour difference
       {                                                                                
         digitalWrite(pumpRelay, HIGH);  //turns on the pump relay
         digitalWrite(LED_BUILTIN, HIGH);   //turns on the on-board LED (used for testing)
-        Serial.println("*** Pump turned ON ***");
+        Serial.println("*** Pump relay turned ON ***");
         delay(pumpRelayTime); //pump relay operation time
         digitalWrite(pumpRelay, LOW); //turns off the pump relay
         digitalWrite(LED_BUILTIN, LOW);  //turns off the on-board LED (used for testing)
-        Serial.println("*** Pump turned OFF ***");                                                                      
-      }    
+        Serial.println("*** Pump relay turned OFF ***");
+        Serial.print("Time of operation (seconds): ");
+        Serial.println(pumpRelayTime / 1000);                                                                      
+      }
       lastReadHour = myRTC.hours; //stores current hour value as previous hour value                                                   
   }
 }
