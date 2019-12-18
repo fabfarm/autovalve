@@ -7,7 +7,7 @@
 virtuabotixRTC myRTC(7, 6, 5);  //Wiring of the RTC (CLK,DAT,RST)
 
 int timeDiff, lastReadHour; //declaring variables for time difference and previous time recorded to calculate time elapsed
-int pumpRelayTime = 30000; //set pump operation time in ms
+long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
 int pumpRelay = 8;
 
 void setup() {
@@ -20,23 +20,23 @@ void setup() {
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
   //myRTC.setDS1302Time(10, 57, 14, 2, 17, 12, 2019);
-  myRTC.setDS1302Time(00, 00, 20, 2, 17, 12, 2019); //the seconds and minutes are set to zero as the code executes every hour
+  myRTC.setDS1302Time(00, 00, 11, 3, 18, 12, 2019); //the seconds and minutes are set to zero as the code executes every hour
   
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
-  Serial.print("Current Date: ");                                                                  
+  Serial.print("Current Date / Time: ");                                                                  
   Serial.print(myRTC.dayofmonth);                                                                         
   Serial.print("/");                                                                                      
   Serial.print(myRTC.month);                                                                              
   Serial.print("/");                                                                                      
-  Serial.println(myRTC.year);
-  Serial.print("Current Hour (24-hour clock): ");                                                                                      
-  Serial.println(myRTC.hours);                          
-  //Serial.print(":");                                                                                      
-  //Serial.print(myRTC.minutes);                                                                            
-  //Serial.print(":");                                                                                      
-  //Serial.println(myRTC.seconds); 
+  Serial.print(myRTC.year);
+  Serial.print(" ");                                                                                      
+  Serial.print(myRTC.hours);                          
+  Serial.print(":");                                                                                      
+  Serial.print(myRTC.minutes);                                                                            
+  Serial.print(":");                                                                                      
+  Serial.println(myRTC.seconds); 
   
   lastReadHour = myRTC.hours - 1; //decrement initial value by 1 to run the pump immediately when the program starts
 }
