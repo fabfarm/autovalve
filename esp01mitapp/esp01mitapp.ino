@@ -21,8 +21,8 @@ Serial.println(ssid);
 WiFi.begin(ssid, password);
 delay(5000);
  
-// The following four lines of code will assign a Static IP Address to the ESP-01 module. 
-// If you do not want this, comment them out.
+// These four lines of code assign static IP Address to ESP-01 
+// Otherwise, comment out for automatic IP
 IPAddress ip(192,168,8,233);
 IPAddress gateway(192,168,1,1);
 IPAddress subnet(255,255,255,0);
