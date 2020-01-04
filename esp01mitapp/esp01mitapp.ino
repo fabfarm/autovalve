@@ -4,7 +4,7 @@ const char* ssid = "fabfarm-ele-container"; // enter SSID
 const char* password = "imakestuff";  // enter password
  
 int relayPin = 2; // GPIO2 of ESP-01
-int value = LOW;  // status of relay initialised to LOW/OFF
+int relay_status = LOW;  // status of relay initialised to LOW/OFF
 WiFiServer ESPserver(80); //Service Port
  
 void setup() 
@@ -20,13 +20,13 @@ Serial.println(ssid);
  
 WiFi.begin(ssid, password);
 delay(5000);
- 
+
 // These four lines of code assign static IP Address to ESP-01 
 // Otherwise, comment out for automatic IP
-IPAddress ip(192,168,8,233);
-IPAddress gateway(192,168,1,1);
-IPAddress subnet(255,255,255,0);
-WiFi.config(ip, gateway, subnet);
+// IPAddress ip(192,168,8,233);
+// IPAddress gateway(192,168,1,1);
+// IPAddress subnet(255,255,255,0);
+// WiFi.config(ip, gateway, subnet);
 
 delay(5000);
  
@@ -75,13 +75,13 @@ if (request.indexOf("/RELAYON") != -1)
 {
   Serial.println("Relay is ON");
   digitalWrite(relayPin, HIGH);
-  value = LOW;
+  relay_status = LOW;
 }
 if (request.indexOf("/RELAYOFF") != -1)
 {
   Serial.println("Relay is OFF");
   digitalWrite(relayPin, LOW);
-  value = HIGH;
+  relay_status = HIGH;
 }
 
 // Return the response
@@ -94,7 +94,7 @@ client.println("<html>");
 // Prints in the computer browser
 client.println("Status of the relay: "); 
 
-if(value == LOW) 
+if(relay_status == LOW) 
 {
   client.print("ON");  
 }
