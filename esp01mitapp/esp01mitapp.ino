@@ -94,12 +94,10 @@ else
 // Send a standard http response header
 client.println("HTTP/1.1 200 OK");  // start the web response that is sent to the web browser
 // The 200 OK is a HTTP response code and in this case is 200 which means the request is OK
-
 client.println("Content-Type: text/html");  // tell the browser that the response content type is text/html
 client.println("Connection: close");
 // the connection will be closed after completion of the response
 client.println(); // need to have a space here after http response header
-
 client.println("<!DOCTYPE HTML>");  // HTML web site template
 client.println("<html lang=\"en\">");
 client.println("<head>");
@@ -107,23 +105,26 @@ client.println("<meta charset=\"utf-8\">");
 client.println("<title>Algarve Fab Farm</title>");
 client.println("</head>");
 client.println("<body>");
+
 // Prints the following text in the web browser
 client.println("<h2>Algarve Fab Farm</h2>");
-client.print("<p>Status of the relay: ");
+client.print("<p>Control relay: ");
+client.println("<a href='/RELAYON' target='_self'>ON</a>");
+client.println("<a href='/RELAYOFF' target='_self'>OFF</a></p>");
 
+client.print("<p>Status of the relay: ");
 if (relay_status == 0)
 {
-  client.println("ON</p>");
+  client.println("<font color=\"red\"><b>ON</b></font></p>");
 }
 else if (relay_status == 1)
 {
-  client.println("OFF</p>");
+  client.println("<font color=\"blue\"><b>OFF</b></font></p>");
 }
 else if (relay_status == 2)
 {
   client.println("Invalid request</p>");
 }
-
 client.println("</body>");
 client.println("</html>");
 
