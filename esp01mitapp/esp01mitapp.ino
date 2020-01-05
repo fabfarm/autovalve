@@ -1,33 +1,32 @@
 #include <ESP8266WiFi.h>
 
-const char* ssid = "fabfarm-ele-container"; // enter SSID
-const char* password = "imakestuff";  // enter password
+const char* ssid = "fabfarm-ele-container"; // enter Service Set Identifier
+const char* password = "imakestuff";  // enter WiFi network password
 
 int relayPin = 2; // GPIO2 of ESP-01
-int relay_status = LOW;  // status of relay initialised to LOW/OFF
+int relay_status = 0;  // status of relay initialised to 0 or OFF.
 WiFiServer ESPserver(80); //Service Port
 
 void setup() 
 {
-Serial.begin(115200);
-pinMode(relayPin, OUTPUT);
-digitalWrite(relayPin, LOW);
+Serial.begin(115200); //Default Baud Rate for ESP-01
+pinMode(relayPin, OUTPUT);  // Connect relay to ESP-01's GPIO 2
+digitalWrite(relayPin, LOW);  // set initial status to LOW
  
 Serial.println();
 Serial.println();
-Serial.print("Connecting to SSID: ");
+Serial.print("Connecting to WiFi: ");
 Serial.println(ssid);
  
 WiFi.begin(ssid, password);
 delay(5000);
 
-// These four lines of code assign static IP address to ESP-01. Otherwise, comment out to get automatic IP.
+// The following 5 lines of code assign static IP address to ESP-01. Otherwise, comment out to get automatic IP.
 // IPAddress ip(192,168,8,233);
 // IPAddress gateway(192,168,1,1);
 // IPAddress subnet(255,255,255,0);
 // WiFi.config(ip, gateway, subnet);
-
-delay(5000);
+//delay(5000);
  
 while (WiFi.status() != WL_CONNECTED) 
 {
@@ -70,47 +69,59 @@ Serial.println(request);
 client.flush();
 
 // Match the request
-if (request.indexOf("/RELAYON") != -1) 
+if (request.indexOf("/RELAYON") != -1)
 {
   Serial.println("Relay is ON");
   digitalWrite(relayPin, HIGH);
-  relay_status = LOW;
+  relay_status = 0; // OFF
 }
-if (request.indexOf("/RELAYOFF") != -1)
+else if (request.indexOf("/RELAYOFF") != -1)
 {
   Serial.println("Relay is OFF");
   digitalWrite(relayPin, LOW);
-  relay_status = HIGH;
-}
-
-// Return the response
-// send a standard http response header
-client.println("HTTP/1.1 200 OK");  // start the web response that is sent to the web browser
-// The 200 OK is a HTTP response code and in this case is 200 which means the request is OK
-client.println("Content-Type: text/html");  // tell the browser that the response content type is text/html
-client.println("Connection: close");
-// the connection will be closed after completion of the response
-client.println(""); // need to have a space here for response
-client.println("<!DOCTYPE HTML>");
-//client.println("<html lang="en">"); 
-client.println("<html>");
-client.println("<head>");
-//client.println("<meta charset='utf-8'>");
-//client.println("<meta charset="utf-8">");
-client.println("<title>Algarve Fab Farm</title>");
-client.println("</head>");
-client.println("<body>");
-client.println("<h2>Algarve Fab Farm</h2>");
-// Prints in the computer browser
-client.print("<p>Status of the relay: ");
-
-if(relay_status == LOW)
-{
-  client.println("ON</p>");
+  relay_status = 1; // ON
 }
 else
 {
+  Serial.println("Invalid request");
+  relay_status = 2; // Invalid request
+  //client.stop();
+  //Serial.println("Client disconnected");
+  //Serial.println();
+  //return;
+}
+
+// Send a standard http response header
+client.println("HTTP/1.1 200 OK");  // start the web response that is sent to the web browser
+// The 200 OK is a HTTP response code and in this case is 200 which means the request is OK
+
+client.println("Content-Type: text/html");  // tell the browser that the response content type is text/html
+client.println("Connection: close");
+// the connection will be closed after completion of the response
+client.println(); // need to have a space here after http response header
+
+client.println("<!DOCTYPE HTML>");  // HTML web site template
+client.println("<html lang=\"en\">");
+client.println("<head>");
+client.println("<meta charset=\"utf-8\">");
+client.println("<title>Algarve Fab Farm</title>");
+client.println("</head>");
+client.println("<body>");
+// Prints the following text in the web browser
+client.println("<h2>Algarve Fab Farm</h2>");
+client.print("<p>Status of the relay: ");
+
+if (relay_status == 0)
+{
+  client.println("ON</p>");
+}
+else if (relay_status == 1)
+{
   client.println("OFF</p>");
+}
+else if (relay_status == 2)
+{
+  client.println("Invalid request</p>");
 }
 
 client.println("</body>");
@@ -122,5 +133,5 @@ delay(1);
 // close the connection:
 //client.stop();
 Serial.println("Client disconnected");
-Serial.println("");
+Serial.println();
 }
