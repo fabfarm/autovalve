@@ -1,7 +1,7 @@
 # autovalve
 This repo contains Arduino-based projects for solenoid valve irrigation automation system.
 ***
-* ### Automated pre-programmed timed relay controller using Arduino UNO R3 and DS1302 RTC module
+* ### Automated timed relay controller using Arduino UNO R3 and DS1302 RTC module
   Arduino UNO R3 with RTC module controls relay. Timer is set to activate relay every hour for 40 s.
 
 * ### ESP-01 WiFi manual relay controller via local network and with MIT Android app
