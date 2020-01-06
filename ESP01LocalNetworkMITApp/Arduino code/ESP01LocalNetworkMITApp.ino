@@ -1,3 +1,8 @@
+/* 
+ * Manual WiFi relay controller via local network and MIT Android app using ESP-01
+ * version 1.1
+ */
+
 #include <ESP8266WiFi.h>
 
 const char* ssid = "fabfarm-ele-container"; // enter Service Set Identifier
@@ -106,7 +111,7 @@ client.println("<title>Algarve Fab Farm</title>");
 client.println("</head>");
 client.println("<body>");
 
-// Prints the following text in the web browser
+// Prints text in web browser
 client.println("<h2>Algarve Fab Farm</h2>");
 client.print("<p>Control relay: ");
 client.println("<a href='/RELAYON' target='_self'>ON</a>");
