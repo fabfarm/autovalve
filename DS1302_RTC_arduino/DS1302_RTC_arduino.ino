@@ -1,3 +1,8 @@
+/* 
+ * Automated pre-programmed timed relay controller using Arduino UNO R3 and DS1302 RTC module
+ * version 1.0
+ */
+
 // Executes a print out example that accesses individual data elements.                    
                                                                                                          
 #include <virtuabotixRTC.h> //RTC DS1302 library                                                                            
