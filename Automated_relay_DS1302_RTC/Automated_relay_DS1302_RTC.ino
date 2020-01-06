@@ -1,5 +1,7 @@
-//Automated water pump relay control using Arduino UNO and DS1302 Real Time Clock Module with Battery Backup
-//--------------------------------------------------------------------------------------------------
+/*
+ * Automated relay control using DS1302 Real Time Clock module
+ * version 1.0
+*/
 
 #include <virtuabotixRTC.h> //DS1302 RTC module library
 
