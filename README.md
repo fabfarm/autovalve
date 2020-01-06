@@ -5,5 +5,4 @@ This repo contains firmware for Arduino-based solenoid valve irrigation automati
 Arduino UNO R3 with RTC module controls relay. Timer is set to every hour and the relay stays on for 40 s.
 
 # ESP-01 WiFi manual relay controller via local network and with MIT Android app
-ESP-01 controls one relay via web page IP (can be dynamic or static configurable from Arduino code)
-MIT Android app works with static IP
+ESP-01 controls relay via web page using IP (can be configured as dynamic or static) and also with MIT Android app (works only with static IP).
