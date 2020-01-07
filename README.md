@@ -1,6 +1,8 @@
 # autovalve
 This repo contains Arduino-based projects for solenoid valve irrigation automation system.
 ***
+![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP01-pinout.png "ESP-01 pinout")
+
 * ### Automated timed relay controller using Arduino UNO R3 and DS1302 RTC module
   Arduino UNO R3 with RTC module controls relay. Timer is set to activate relay every hour for 40 s.
 
