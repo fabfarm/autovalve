@@ -14,5 +14,6 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
   Note: GPIO 2 should not be connected to LED at boot up. The pin can be set as INPUT.
 
 * ### Using ESP-01 to measuring AC Current using ACS712
+
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP8266EX.jpg "ESP-01 chip")
 
