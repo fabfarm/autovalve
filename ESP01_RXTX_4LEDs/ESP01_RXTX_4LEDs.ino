@@ -6,8 +6,8 @@
 
 #include <ESP8266WiFi.h>
 
-const char* ssid = "fabfarm-ele-container"; // enter Service Set Identifier
-const char* password = "imakestuff";  // enter WiFi network password
+const char* ssid = "*****"; // enter Service Set Identifier
+const char* password = "*****";  // enter WiFi network password
 
 int led0Pin = 0; // GPIO0 of ESP-01
 int led1Pin = 1; // GPIO1 of ESP-01 (TX)
