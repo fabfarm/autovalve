@@ -13,5 +13,5 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
   ESP-01 controls 4 LEDs independently via self-hosted web page using GPIO 0, 1 (TX), 2 and 3 (RX). 
   Note: GPIO 2 should not be connected to LED at boot up but it can be set as INPUT to sensor.
 
-* ### Measure AC Current using ACS712 and Arduino UNO.
+* ### Measure AC Current using ACS712 and Arduino UNO
 
