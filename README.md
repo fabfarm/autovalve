@@ -15,10 +15,10 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
 
 * ### Measure AC Current using ACS712 and Arduino UNO
 
-#### ADC pin
+  #### ADC pin
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP8266EX.jpg "ESP-01 ADC pin")
 
-#### Extra GPIO pins
+  #### Extra GPIO pins
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/esp8266_extra_gpio.jpg "ESP-01 extra GPIOs")
