@@ -9,6 +9,8 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
   
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP01-pins.png "ESP-01 pins")
 
+![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP8266pinout.png "ESP-01 pinout")
+
 * ### ESP-01 WiFi LEDs controller using 4 GPIO pins
   ESP-01 controls 4 LEDs independently via self-hosted web page using GPIO 0, 1 (TX), 2 and 3 (RX). 
   Note: GPIO 2 should not be connected to LED at boot up but it can be set as INPUT to sensor.
