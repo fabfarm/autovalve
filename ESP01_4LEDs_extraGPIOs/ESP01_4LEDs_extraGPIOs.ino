@@ -1,7 +1,6 @@
 /* 
- * ESP-01 WiFi 4 LEDs controller via local network
- * version 1.1.3
- * Testing RX and TX as GPIO pins
+ * ESP-01 WiFi ADC and some extra GPIO pins
+ * version 1.1.4 beta
  */
 
 #include <ESP8266WiFi.h>
@@ -9,10 +8,14 @@
 const char* ssid = "fabfarm-ele-container"; // enter Service Set Identifier
 const char* password = "imakestuff";  // enter WiFi network password
 
-int led0Pin = 0; // GPIO0 of ESP-01
-int led1Pin = 1; // GPIO1 of ESP-01 (TX)
-int led2Pin = 2; // GPIO2 of ESP-01
-int led3Pin = 3; // GPIO3 of ESP-01 (RX)
+const int led0Pin = 12; // GPIO-12 of ESP-01
+const int led1Pin = 13; // GPIO-13 of ESP-01
+const int led2Pin = 14; // GPIO-14 of ESP-01
+const int led3Pin = 15; // GPIO-15 of ESP-01
+const int led4Pin = 4; // GPIO-04 of ESP-01
+const int led5Pin = 5; // GPIO-05 of ESP-01
+
+const int analogInPin = A0;  // ESP8266 Analog Pin: TOUT / pin 6
 
 int led0_status = 0;  // status of LED 1 initialised to 0 or OFF
 int led1_status = 0;  // status of LED 2 initialised to 0 or OFF
@@ -26,11 +29,12 @@ void setup()
 {
 
 //********** CHANGE PIN FUNCTION  TO GPIO **********
-pinMode(1, FUNCTION_3); // GPIO 1 (TX) swap the pin to a GPIO.
-pinMode(3, FUNCTION_3); // GPIO 3 (RX) swap the pin to a GPIO.
+//pinMode(1, FUNCTION_0); // GPIO 1 (TX) swap the pin to a GPIO.
+//pinMode(3, FUNCTION_0); // GPIO 3 (RX) swap the pin to a GPIO.
 //**************************************************
  
-//Serial.begin(115200); // Default Baud Rate for ESP-01
+Serial.begin(115200); // Default Baud Rate for ESP-01
+
 pinMode(led0Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
 pinMode(led1Pin, OUTPUT);  // set ESP-01's GPIO as output
@@ -40,12 +44,12 @@ pinMode(led2Pin, OUTPUT);  // set ESP-01's GPIO as output
 pinMode(led3Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
 
-/*
+
 Serial.println();
 Serial.println();
 Serial.print("Connecting to WiFi: ");
 Serial.println(ssid);
-*/
+
 WiFi.begin(ssid, password);
 delay(5000);
 
@@ -59,22 +63,22 @@ delay(5000);
 while (WiFi.status() != WL_CONNECTED) 
 {
   delay(100);
-  //Serial.print("*");
+  Serial.print("*");
 }
-//Serial.println("");
-//Serial.println("WiFi connected");
+Serial.println("");
+Serial.println("WiFi connected");
  
 // Start the server
 ESPserver.begin();
-//Serial.println("Server started");
+Serial.println("Server started");
  
 // Print the IP address
-/*
+
 Serial.print("The URL to control ESP-01: ");
 Serial.print("http://");
 Serial.println(WiFi.localIP());
 Serial.println("");
-*/
+
 }
 
 void loop() 
@@ -87,7 +91,7 @@ if (!client)
 }
 
 // Wait until the client sends some data
-//Serial.println("Client connected");
+Serial.println("Client connected");
 while(!client.available())
 {
   delay(1);
@@ -95,69 +99,69 @@ while(!client.available())
 
 // Read the first line of the request
 String request = client.readStringUntil('\r');
-//Serial.println(request);
+Serial.println(request);
 client.flush();
 
 // Match the request
 if (request.indexOf("/LED0OFF") != -1)
 {
-  //Serial.println("LED 0 is OFF");
+  Serial.println("LED 0 is OFF");
   digitalWrite(led0Pin, LOW);
   led0_status = 0; // OFF
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED0ON") != -1)
 {
-  //Serial.println("LED 0 is ON");
+  Serial.println("LED 0 is ON");
   digitalWrite(led0Pin, HIGH);
   led0_status = 1; // ON
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED1OFF") != -1)
 {
-  //Serial.println("LED 1 is OFF");
+  Serial.println("LED 1 is OFF");
   digitalWrite(led1Pin, LOW);
   led1_status = 0; // OFF
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED1ON") != -1)
 {
-  //Serial.println("LED 1 is ON");
+  Serial.println("LED 1 is ON");
   digitalWrite(led1Pin, HIGH);
   led1_status = 1; // ON
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED2OFF") != -1)
 {
-  //Serial.println("LED 2 is OFF");
+  Serial.println("LED 2 is OFF");
   digitalWrite(led2Pin, LOW);
   led2_status = 0; // OFF
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED2ON") != -1)
 {
-  //Serial.println("LED 2 is ON");
+  Serial.println("LED 2 is ON");
   digitalWrite(led2Pin, HIGH);
   led2_status = 1; // ON
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED3OFF") != -1)
 {
-  //Serial.println("LED 3 is OFF");
+  Serial.println("LED 3 is OFF");
   digitalWrite(led3Pin, LOW);
   led3_status = 0; // OFF
   check_request = 0;  // reset validity of request
 }
 else if (request.indexOf("/LED3ON") != -1)
 {
-  //Serial.println("LED 3 is ON");
+  Serial.println("LED 3 is ON");
   digitalWrite(led3Pin, HIGH);
   led3_status = 1; // ON
   check_request = 0;  // reset validity of request
 }
 else
 {
-  //Serial.println("Invalid request");
+  Serial.println("Invalid request");
   check_request = 1;  // set request as invalid
 }
 
@@ -245,6 +249,6 @@ client.println("</html>");
 delay(1);
 
 // close the connection:
-//Serial.println("Client disconnected");
-//Serial.println();
+Serial.println("Client disconnected");
+Serial.println();
 }

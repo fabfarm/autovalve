@@ -46,8 +46,9 @@ void setup() {
 void loop() {
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
 
-/*
+
 // Start printing elements as individuals                                                                   
+/*
   Serial.print("Current Date / Time: ");                                                                  
   Serial.print(myRTC.dayofmonth);                                                                         
   Serial.print("/");                                                                                      
@@ -71,6 +72,7 @@ void loop() {
       //for debugging
       //Serial.print("Current RTC hour: "); //display the hour from RTC module
       //Serial.println(myRTC.hours);
+      
       Serial.print("Last recorded hour: "); //display the hour from RTC module
       Serial.println(lastReadHour);
       Serial.print("Hour difference: "); //display the hour difference

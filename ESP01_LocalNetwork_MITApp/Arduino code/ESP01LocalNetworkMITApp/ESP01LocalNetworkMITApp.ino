@@ -5,8 +5,8 @@
 
 #include <ESP8266WiFi.h>
 
-const char* ssid = "*****"; // enter Service Set Identifier
-const char* password = "*****";  // enter WiFi network password
+const char* ssid = "fabfarm-ele-container"; // enter Service Set Identifier
+const char* password = "imakestuff";  // enter WiFi network password
 
 int relayPin = 2; // GPIO2 of ESP-01
 int relay_status = 0;  // status of relay initialised to 0 or OFF.
@@ -26,12 +26,12 @@ Serial.println(ssid);
 WiFi.begin(ssid, password);
 delay(5000);
 
-// The following 5 lines of code assign static IP address to ESP-01. Otherwise, comment out to get automatic IP.
-// IPAddress ip(192,168,8,233);
-// IPAddress gateway(192,168,1,1);
-// IPAddress subnet(255,255,255,0);
-// WiFi.config(ip, gateway, subnet);
-//delay(5000);
+ //The following 4 lines of code assign static IP address to ESP-01. Otherwise, comment out to get automatic IP.
+ IPAddress ip(192,168,8,158);
+ IPAddress gateway(192,168,1,1);
+ IPAddress subnet(255,255,255,0);
+ WiFi.config(ip, gateway, subnet);
+ delay(5000);
  
 while (WiFi.status() != WL_CONNECTED) 
 {
