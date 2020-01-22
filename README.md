@@ -33,5 +33,4 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP-01solderedextraGPIOs.jpg "ESP-01 soldered extra GPIOs")
 
-* ### HC-31 Bluetooth 2.0 Module (BC417) to read ACS712 current sensor using Arduino UNO and Serial Monitor via Android app.
 
