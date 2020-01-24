@@ -1,7 +1,7 @@
 /*
  * Automated relay control using DS1302 Real Time Clock module
  * version 2.0
- * Fixed automatic start of pump immediately after power outage
+ * Fixed automatic restart of pump immediately after power outage
 */
 
 #include <virtuabotixRTC.h> //DS1302 RTC module library
