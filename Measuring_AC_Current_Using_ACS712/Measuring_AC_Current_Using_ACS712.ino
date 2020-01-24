@@ -38,7 +38,7 @@ float getVPP()  // continously sampling and logging max and min values
   int maxValue = 0; // to store max value, initialised at lowest value.
   int minValue = 1024; // to store min value, initialised at highest value.
 
-  // non-blocking method
+
   uint32_t start_time = millis();
   while ((millis() - start_time) < 3000) // sample for 3000 ms or 3 secs
   {

@@ -26,19 +26,19 @@ void setup()
 {
 
 //********** CHANGE PIN FUNCTION  TO GPIO **********
-//pinMode(1, FUNCTION_0); // GPIO 1 (TX) swap the pin to a GPIO.
-//pinMode(3, FUNCTION_0); // GPIO 3 (RX) swap the pin to a GPIO.
+pinMode(1, FUNCTION_0); // GPIO 1 (TX) swap the pin to a GPIO.
+pinMode(3, FUNCTION_0); // GPIO 3 (RX) swap the pin to a GPIO.
 //**************************************************
 
 Serial.begin(115200); // Default Baud Rate for ESP-01
 
-//pinMode(led0Pin, OUTPUT);  // set ESP-01's GPIO as output
+pinMode(led0Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
-//pinMode(led1Pin, OUTPUT);  // set ESP-01's GPIO as output
+pinMode(led1Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
 pinMode(led2Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
-//pinMode(led3Pin, OUTPUT);  // set ESP-01's GPIO as output
+pinMode(led3Pin, OUTPUT);  // set ESP-01's GPIO as output
 //digitalWrite(led1Pin, LOW);  // set initial GPIO pin status to LOW
 
 
