@@ -32,3 +32,5 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
   #### Soldered wires from ADC and some extra GPIO pins to pin headers
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/ESP-01solderedextraGPIOs.jpg "ESP-01 soldered extra GPIOs")
+
+
