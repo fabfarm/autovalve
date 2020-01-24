@@ -9,7 +9,7 @@
 // Creation of the Real Time Clock Object
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
-int timeDiff, lastReadHour, setMinutes = 0, setSeconds = 0; //declaring variables for time difference and previous time recorded to calculate time elapsed
+int setMinutes = 0, setSeconds = 0; //declaring variables for time difference and previous time recorded to calculate time elapsed
 long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
 int pumpRelay = 8;
 
@@ -21,7 +21,7 @@ void setup() {
   Serial.println("Automated pump relay control with RTC (version 2)");
   Serial.println("*************************************************");
   pinMode(pumpRelay, OUTPUT); // set digital pin pumpRelay as an output
-  pinMode(LED_BUILTIN, OUTPUT); // set digital pin LED_BUILTIN as an output
+  pinMode(LED_BUILTIN, OUTPUT); // set digital pin LED_BUILTIN as an output (used for testing only)
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
@@ -51,7 +51,6 @@ void loop() {
   if (millis() >= time_now + interval)  //non-blocking
   {
     time_now += interval;
-    //myRTC.updateTime();
     Serial.print("RTC Time: ");                                                                                                                                                    
     Serial.print(myRTC.hours);                                                                              
     Serial.print(":");                                                                                      
