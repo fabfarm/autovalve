@@ -25,7 +25,7 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/esp8266_extra_gpio.jpg "ESP-01 extra GPIOs")
 
-  #### ADC pin voltage divider
+  #### ADC voltage divider
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/esp01adcpotentialdivider.png "ESP-01 ADC Voltage Divider")
 
