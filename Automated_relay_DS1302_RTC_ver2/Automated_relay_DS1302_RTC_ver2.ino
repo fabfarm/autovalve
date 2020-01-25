@@ -4,20 +4,20 @@
  * Fixed automatic restart of pump immediately after power outage
 */
 
-#include <virtuabotixRTC.h> //DS1302 RTC module library
+#include <virtuabotixRTC.h> // DS1302 RTC module library
 
 // Creation of the Real Time Clock Object
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
-int setMinutes = 0, setSeconds = 0; //declaring variables for time difference and previous time recorded to calculate time elapsed
+int setMinutes = 0, setSeconds = 0; // set minutes and seconds for pump activation
 long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
-int pumpRelay = 8;
+const int pumpRelay = 8;  // set pump relay pin
 
 unsigned long interval = 2000;  // used to print current time every 2000 ms or 2 secs
 unsigned long time_now = 0;
 
 void setup() {
-  Serial.begin(9600); //open serial port and set the baud rate
+  Serial.begin(9600); // open serial port and set the baud rate
   Serial.println("Automated pump relay control with RTC (version 2)");
   Serial.println("*************************************************");
   pinMode(pumpRelay, OUTPUT); // set digital pin pumpRelay as an output
@@ -25,7 +25,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(40, 59, 18, 5, 24, 1, 2020); // uncomment, upload to reset RTC and comment, upload for this sketch
+  //myRTC.setDS1302Time(50, 59, 19, 5, 25, 1, 2020); // uncomment, upload to reset RTC and comment, upload for this sketch
   
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
@@ -48,7 +48,7 @@ void loop() {
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
 
   // Start printing RTC time elements as individuals                                                                   
-  if (millis() >= time_now + interval)  //non-blocking
+  if (millis() >= time_now + interval)  // non-blocking method. prints RTC time every 2 seconds.
   {
     time_now += interval;
     Serial.print("RTC Time: ");                                                                                                                                                    
