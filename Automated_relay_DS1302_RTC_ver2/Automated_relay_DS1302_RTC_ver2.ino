@@ -14,7 +14,7 @@ int setMinutes = 0, setSeconds = 0; // set minutes and seconds for pump activati
 long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
 const int pumpRelay = 8;  // set pump relay pin
 
-unsigned long interval = 2000;  // used to print current time every 2000 ms or 2 secs
+unsigned long interval = 2000;  // prints RTC time every 2000 ms or 2 secs
 unsigned long time_now = 0;
 
 void setup() {
@@ -26,7 +26,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment, upload to reset RTC and comment, upload for this sketch
+  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
@@ -74,11 +74,11 @@ void loop() {
         
     Serial.println("*** Pump relay turned ON ***");
     Serial.print("Pump operation time: ");
-    Serial.print(pumpRelayTime / 1000); // calculate time of operation in second      
+    Serial.print(pumpRelayTime / 1000); // calculate time of operation in seconds      
     Serial.println(" seconds");
     delay(pumpRelayTime); // pump relay operation time
     digitalWrite(pumpRelay, LOW); // turn off the pump relay
-    digitalWrite(LED_BUILTIN, LOW);  // turn off the on-board LED (used for testing only)
+    digitalWrite(LED_BUILTIN, LOW);  // turn off the on-board LED (used for testing)
     Serial.println("*** Pump relay turned OFF ***");                                                                                                                    
   }
 }
