@@ -1,6 +1,7 @@
 /*
  * Automated relay control using DS1302 Real Time Clock module
  * version 2.1
+ * Changelog:
  * Fixed automatic restart of pump immediately after power outage
  * Fixed serial output to avoid the timing falling behind by 40s
 */
