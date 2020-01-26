@@ -1,7 +1,8 @@
 /*
  * Automated relay control using DS1302 Real Time Clock module
- * version 2.0
+ * version 2.1
  * Fixed automatic restart of pump immediately after power outage
+ * Fixed serial output to avoid the timing falling behind by 40s
 */
 
 #include <virtuabotixRTC.h> // DS1302 RTC module library
@@ -25,7 +26,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 59, 19, 5, 25, 1, 2020); // uncomment, upload to reset RTC and comment, upload for this sketch
+  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment, upload to reset RTC and comment, upload for this sketch
   
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
@@ -48,9 +49,9 @@ void loop() {
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
 
   // Start printing RTC time elements as individuals                                                                   
-  if (millis() >= time_now + interval)  // non-blocking method. prints RTC time every 2 seconds.
+  if (millis() - time_now >= interval)  // non-blocking method. prints RTC time every 2 seconds.
   {
-    time_now += interval;
+    time_now = millis();
     Serial.print("RTC Time: ");                                                                                                                                                    
     Serial.print(myRTC.hours);                                                                              
     Serial.print(":");                                                                                      
