@@ -59,7 +59,11 @@ void loop() {
     Serial.print(myRTC.minutes);                                                                            
     Serial.print(":");                                                                                      
     Serial.println(myRTC.seconds);                                                                          
+<<<<<<< HEAD
   }
+=======
+  }                                                       
+>>>>>>> 393df49ec86e3d66910f2d9aa03256cdd2c04df9
   
   if (myRTC.minutes == setMinutes && myRTC.seconds == setSeconds)
   {
