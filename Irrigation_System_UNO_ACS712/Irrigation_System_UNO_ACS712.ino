@@ -1,7 +1,12 @@
 // Arduino based controller for the automated irrigation system
 // Using ACS712 current sensor
-// version 1.1
+// version 2
 //--------------------------------------------------------------------------------------------------
+#include <virtuabotixRTC.h> // DS1302 RTC module library
+
+// Creation of the Real Time Clock Object
+virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
+
 //Defining the time variables used within the code.
 //Timer variables
 int h = 10;
@@ -19,38 +24,33 @@ boolean valve_4_state = 0;
 //boolean pump_state = 0;
 
 //---------------------------------------------------------------------------------------------------
-//Programmable times for control events, expressed in hours and minutes from the time0
-//Input time for:
-//Valve 1 --- fruit trees on
-int valve_1_on_h  = 14;
-int valve_1_on_mins  = 0;
-int valve_1_off_h = 14;
-int valve_1_off_mins = 30;
-//Valve 2 --- cypress on
-int valve_2_on_h  = 10;
-int valve_2_on_mins  = 1;
-int valve_2_off_h = 11;
-int valve_2_off_mins = 0;
-//Valve 3 --- vegetable garden
-int valve_3_on_h  = 17;
-int valve_3_on_mins  = 0;
-int valve_3_off_h = 17;
-int valve_3_off_mins = 20;
-//Valve 4 --- extra
-int valve_4_on_h  = 99999;
-int valve_4_on_mins  = 99999;
-int valve_4_off_h = 99999;
-int valve_4_off_mins = 99999;
-//--------------------------------------------------------------------------------------------------
-//The section below assigns digital Arduino pins to named variables
-// for better readability of code
-int valveRelay1 = 2;
-int valveRelay2 = 3;
-int valveRelay3 = 4;
-int valveRelay4 = 5;
-int pumpRelay   = 8;
+//Programmable times, expressed in hours and minutes
 
-//--------------------------------------------------------------------------------------------------
+//Valve 1 --- fruit trees on
+const int valveRelay1_OnHour = 14;
+const int valveRelay1_OnMin = 0;
+const int valveRelay1_OffHour = 14;
+const int valveRelay1_OffMin = 30;
+
+//Valve 2 --- cypress on
+const int valveRelay2_OnHour = 10;
+const int valveRelay2_OnMin = 0;
+const int valveRelay2_OffHour = 11;
+const int valveRelay2_OffMin = 0;
+
+//Valve 3 --- vegetable garden
+const int valveRelay3_OnHour = 17;
+const int valveRelay3_OnMin = 0;
+const int valveRelay3_OffHour = 17;
+const int valveRelay3_OffMin = 20;
+
+// pump and relay pins
+const int pumpRelay = 8;  // set pump relay pin
+const int valveRelay1 = 9;
+const int valveRelay2 = 10;
+const int valveRelay3 = 11;
+const int valveRelay4 = 12;
+
 // ACS712 current sensor
 const int ACS_pin = A0;
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
@@ -64,14 +64,9 @@ float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
 //voltage at an output terminal with reference to a common terminal, normally ground,
 //when no signal is applied to the input.
 
-#include <virtuabotixRTC.h> // DS1302 RTC module library
-
-// Creation of the Real Time Clock Object
-virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
-
+// not needed
 int setMinutes = 0, setSeconds = 0; // set minutes and seconds for pump activation
 long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
-const int pumpRelay = 8;  // set pump relay pin
 
 unsigned long interval = 2000;  // prints RTC time every 2000 ms or 2 secs
 unsigned long time_now = 0;
@@ -85,8 +80,12 @@ void setup() {
   pinMode(valveRelay1, OUTPUT); // defining the relayPin as digital output
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
-  pinMode(valveRelay4, OUTPUT);
   pinMode(pumpRelay, OUTPUT);
+
+  digitalWrite(valveRelay1, LOW);
+  digitalWrite(valveRelay2, LOW);
+  digitalWrite(valveRelay3, LOW);
+  digitalWrite(pumpRelay, LOW);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -231,10 +230,7 @@ void loop() {
     digitalWrite(valveRelay4, LOW);
     Serial.println("\n***valve-4 turned off\n");
   }
-
-  //calling function for updating the time variables - secs, mins and hour
-  timer();
-
+ 
 
   VPP = getVPP(); // find peak-to-peak voltage
   VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
@@ -263,37 +259,6 @@ void loop() {
 //    }
 //  }
 //}
-
-//--------------------------------------------------------------------------------------------------
-//This is a function for counting hours and minutes
-int timer() {
-
-  //waiting 1000 ms = 1s this is just a freaking comment!!!
-  delay(1000);
-
-  // increment hours
-  if (h == 23 && mins == 59 && secs == 59) {
-    h = 0;
-  }
-  else if (mins == 59 && secs == 59) {
-    h = h + 1;
-  }
-
-  // increment minutes
-  if (mins == 59 && secs == 59) {
-    mins = 0;
-  }
-  else if (secs == 59) {
-    mins = mins + 1;
-  }
-
-  // seconds
-  if (secs == 59) {
-    secs = 0;
-  }
-  else
-    secs = secs + 1;
-}
 
 // function to measure peak-to-peak voltage
 float getVPP()  // continously sampling and logging max and min values
