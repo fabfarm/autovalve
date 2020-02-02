@@ -1,0 +1,33 @@
+<html>
+<head>
+  <title>ESP-01 Web Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h1>ESP-01 Web Server</h1>
+  <p>GPIO state<strong> %STATE%</strong></p>
+  <p>
+    <a href="/on"><button class="button">ON</button></a>
+    <a href="/off"><button class="button button2">OFF</button></a>
+  </p>
+  <p>
+    <span class="sensor-labels">Analog Sensor</span>
+    <span id="temperature">%ANALOGSENSOR%</span>
+    <sup class="units">Amps</sup>
+  </p>
+</body>
+<script>
+  setInterval(function ( ) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("analogsensor").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/analogsensor", true);
+    xhttp.send();
+  }, 10000 ) ;
+</script>
+</html>

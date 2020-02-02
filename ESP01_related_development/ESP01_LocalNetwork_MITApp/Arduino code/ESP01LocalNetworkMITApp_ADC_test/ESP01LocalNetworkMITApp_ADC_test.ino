@@ -1,6 +1,6 @@
 /* 
- * Manual WiFi relay controller via local network and MIT Android app using ESP-01
- * version 1.1
+ * ESP-01 WiFi relay controller
+ * version 1.2 beta
  */
 
 #include <ESP8266WiFi.h>
@@ -30,6 +30,66 @@ int maxValue = 0; // store max value, initialised at lowest value.
 int minValue = 1024; // store min value, initialised at highest value.
 
 WiFiServer ESPserver(80); //Service Port
+
+// tracking of number of Wi-Fi reconnects
+// and connection time
+unsigned long numberOfReconnects;
+unsigned long millisReconnected;
+
+#define NUMBER_OF_SAMPLES 5000  // maximum number of samples taken
+int samples[NUMBER_OF_SAMPLES]; // declare maximum size of array
+int numberOfSamples = 1000; // number of samples taken in a single shoot
+unsigned long samplingTime = 1;  // time in us to collect all the numberOfSamples
+int samplingPause = 4; // time in ms to pause between continuous sampling
+
+unsigned long totalSamples;
+unsigned long millisLastSample;
+
+unsigned long showStatisticsTimer;
+
+void analogSample(void)
+{
+  if (millis() < millisLastSample + samplingPause)
+  {
+    return;
+  }
+  samplingTime = micros();
+  for (int i = 0; i < numberOfSamples; i++)
+  {
+    samples[i] = analogRead(A0);
+    totalSamples++;
+  }
+  samplingTime = micros() - samplingTime;
+  millisLastSample = millis();
+}
+
+
+void showStatistics(void)
+{
+  // show statistics every 5s (5000ms)
+  if(millis() > showStatisticsTimer + 5000)
+  {
+    showStatisticsTimer = millis();
+    Serial.print(numberOfSamples);
+    Serial.print(" : ");
+    // average number of samples per second excluding pause time
+    Serial.print(numberOfSamples * 1000000 / samplingTime);
+    Serial.print(" 1/s : ");
+    Serial.print(samplingPause);
+    Serial.print("ms : ");
+    Serial.print(numberOfReconnects);
+    Serial.print(" : ");
+    long timeConnected = (millis() - millisReconnected) / 1000;
+    Serial.print(timeConnected);
+    Serial.print("s : ");
+    // average number of samples per second including pause time
+    // since last connected / reconnected to Wi-Fi
+    Serial.print(totalSamples / timeConnected);
+    Serial.print(" 1/s");
+    Serial.println();
+  }
+}
+
 
 void setup() 
 {
@@ -121,6 +181,10 @@ else
   //return;
 }
 
+analogSample();
+showStatistics();
+
+/*
 // find the minimum and maximum sensor values within interval and convert range to volts
 unsigned long currentMillis = millis(); // get current time
 
@@ -141,6 +205,7 @@ else
   
   previousMillis = millis();
 }
+*/
 
 // Send a standard http response header
 client.println("HTTP/1.1 200 OK");  // start the web response that is sent to the web browser
