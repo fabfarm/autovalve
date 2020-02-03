@@ -1,8 +1,8 @@
 # autovalve
 This repo contains Arduino-based projects for solenoid valve irrigation automation system.
 ***
-* ### Automated timed relay controller using Arduino UNO R3 and DS1302 RTC module
-  Arduino UNO R3 with RTC module controls relay. Timer is set to activate relay every hour for 40 s.
+* ### Automated water pump controller using Arduino UNO and DS1302 RTC module
+  Arduino UNO R3 with RTC module controls pump relay. Timer activates relay every hour for 40 s, irrespective of power outage.
 
 * ### ESP-01 WiFi relay controller via local network and with MIT Android app
   Control relay using ESP-01 via self-hosted web page using IP address (can be configured as dynamic or static) in browser on local network and simultaneously via Android app built using MIT App Inventor (http://ai2.appinventor.mit.edu/).
@@ -29,5 +29,6 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/esp01adcpotentialdivider.png "ESP-01 ADC Voltage Divider")
 
-
+* ### Automated irrigation controller using Arduino UNO, DS1302 RTC module and ACS712 current sensor
+  Arduino UNO with RTC module controls 4 relays. Timers set for 1 pump and 3 valves. Current sensor enables deactivation of pump if current limit reached.
 

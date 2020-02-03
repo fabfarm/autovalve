@@ -32,14 +32,12 @@ const int valveRelay3_OffMin = 20;
 // Set current limit for pump
 //---------------------------------------------------------------------------------------------------
 float currentLimit = 100.0; // set the maximum current limit (Amps)
-//---------------------------------------------------------------------------------------------------
 
 // pump and relay pins
 const int pumpRelay = 8;
 const int valveRelay1 = 9;
 const int valveRelay2 = 10;
 const int valveRelay3 = 11;
-const int valveRelay4 = 12;
 
 // ACS712 current sensor
 const int ACS_pin = A0; // set analog input pin
@@ -54,8 +52,8 @@ float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
 //voltage at an output terminal with reference to a common terminal, normally ground,
 //when no signal is applied to the input.
 
-unsigned long interval = 2000;  // prints RTC time every 2000 ms
-unsigned long time_now;
+unsigned long RTCtimeInterval = 2000;  // prints RTC time every 2000 ms
+unsigned long RTCtimeNow;
 
 unsigned long currentTimeNow;
 unsigned long pumpTimeNow;
@@ -84,7 +82,7 @@ void setup() {
 
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 34, 11, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  //myRTC.setDS1302Time(50, 43, 12, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
@@ -107,9 +105,9 @@ void loop()
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.      
 
   // Start printing RTC time elements as individuals                                                                  
-  if (millis() - time_now >= interval)  // non-blocking method. prints RTC time every 2 seconds.
+  if (millis() - RTCtimeNow >= RTCtimeInterval)  // non-blocking. prints RTC time every 2 seconds.
   {
-    time_now = millis();
+    RTCtimeNow = millis();
     Serial.print("RTC Time: ");                     
     Serial.print(myRTC.hours);                                                                              
     Serial.print(":");                                                                                      
@@ -274,7 +272,7 @@ void loop()
         //wait 5s
       }
       //check current level again
-      if (IRMS >= currentLimit) // if current limit is still exceeded after 5s, turn off pump
+      if (IRMS >= currentLimit) // check if current limit is still exceeded after 5s, turn off pump
       {
       digitalWrite(pumpRelay, LOW);
       Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
