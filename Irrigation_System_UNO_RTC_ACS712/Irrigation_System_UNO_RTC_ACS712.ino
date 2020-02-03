@@ -8,25 +8,31 @@
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
 //---------------------------------------------------------------------------------------------------
-// Set ON and OFF times for valves and pump relays
+// Set ON and OFF timers
 //---------------------------------------------------------------------------------------------------
-//Valve 1 --- fruit trees on
+// Timers - fruit trees
 const int valveRelay1_OnHour = 14;
 const int valveRelay1_OnMin = 0;
 const int valveRelay1_OffHour = 14;
 const int valveRelay1_OffMin = 30;
 
-//Valve 2 --- cypress on
+// Timers - cypress
 const int valveRelay2_OnHour = 10;
 const int valveRelay2_OnMin = 0;
 const int valveRelay2_OffHour = 11;
 const int valveRelay2_OffMin = 0;
 
-//Valve 3 --- vegetable garden
+// Timers - vegetable garden
 const int valveRelay3_OnHour = 17;
 const int valveRelay3_OnMin = 0;
 const int valveRelay3_OffHour = 17;
 const int valveRelay3_OffMin = 20;
+
+//---------------------------------------------------------------------------------------------------
+// Set current limit for pump
+//---------------------------------------------------------------------------------------------------
+float currentLimit = 100.0; // set the maximum current limit (Amps)
+//---------------------------------------------------------------------------------------------------
 
 // pump and relay pins
 const int pumpRelay = 8;
@@ -34,12 +40,6 @@ const int valveRelay1 = 9;
 const int valveRelay2 = 10;
 const int valveRelay3 = 11;
 const int valveRelay4 = 12;
-
-//---------------------------------------------------------------------------------------------------
-// set current limit
-//---------------------------------------------------------------------------------------------------
-float currentLimit = 100; // set the maximum current limit (Amps)
-//---------------------------------------------------------------------------------------------------
 
 // ACS712 current sensor
 const int ACS_pin = A0; // set analog input pin
@@ -54,13 +54,16 @@ float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
 //voltage at an output terminal with reference to a common terminal, normally ground,
 //when no signal is applied to the input.
 
-unsigned long interval = 2000;  // prints RTC time every 2000 ms or 2 secs
-unsigned long time_now = 0;
+unsigned long interval = 2000;  // prints RTC time every 2000 ms
+unsigned long time_now;
+
+unsigned long currentTimeNow;
+unsigned long pumpTimeNow;
+unsigned long valveTimeNow;
 
 unsigned long waitTimePump = 40000; // wait 40s to activate pump
 unsigned long waitTimeValve = 10000; // wait 10s to deactivate relay
 unsigned long waitTimeCurrent = 5000; // wait 5s to avoid current spikes
-unsigned long timeNow = 0;
 bool pump_state = 0; // pump state initialised to OFF
 
 void setup() {
@@ -131,9 +134,9 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Wait 40s before activating Pump Relay.");
-    timeNow = millis();
+    pumpTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimePump)
+    while (millis() < pumpTimeNow + waitTimePump)
     {
       //wait 40s
     }
@@ -149,9 +152,9 @@ void loop()
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 1.");
-    timeNow = millis();
+    valveTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimeValve)
+    while (millis() < valveTimeNow + waitTimeValve)
     {
       //wait 10s
     }
@@ -175,9 +178,9 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Wait 40s before activating Pump Relay.");
-    timeNow = millis();
+    pumpTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimePump)
+    while (millis() < pumpTimeNow + waitTimePump)
     {
       //wait 40s
     }
@@ -193,9 +196,9 @@ void loop()
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 2.");
-    timeNow = millis();
+    valveTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimeValve)
+    while (millis() < valveTimeNow + waitTimeValve)
     {
       //wait 10s
     }
@@ -219,9 +222,9 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Wait 40s before activating Pump Relay.");
-    timeNow = millis();
+    pumpTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimePump)
+    while (millis() < pumpTimeNow + waitTimePump)
     {
       //wait 40s
     }
@@ -237,9 +240,9 @@ void loop()
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 3.");
-    timeNow = millis();
+    valveTimeNow = millis();
     // to check if non-blocking
-    while (millis() < timeNow + waitTimeValve)
+    while (millis() < valveTimeNow + waitTimeValve)
     {
       //wait 10s
     }
@@ -265,12 +268,12 @@ void loop()
     if (IRMS >= currentLimit)
     {
       //wait 5 seconds to neglect current spikes
-      timeNow = millis();
-      while (millis() < timeNow + waitTimeCurrent)
+      currentTimeNow = millis();
+      while (millis() < currentTimeNow + waitTimeCurrent)
       {
         //wait 5s
       }
-      //check current levels again
+      //check current level again
       if (IRMS >= currentLimit) // if current limit is still exceeded after 5s, turn off pump
       {
       digitalWrite(pumpRelay, LOW);
