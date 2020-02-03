@@ -1,6 +1,6 @@
 // Arduino based controller for the automated irrigation system
-// Using ACS712 current sensor
-// version 2
+// Using RTC and ACS712 current sensor
+// version 1
 //--------------------------------------------------------------------------------------------------
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
@@ -71,13 +71,12 @@ long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can on
 unsigned long interval = 2000;  // prints RTC time every 2000 ms or 2 secs
 unsigned long time_now = 0;
 
+unsigned long waitTime = 40000; // wait 40s between activation of relay and then pump.
+unsigned long timeNow = 0;
 
-//--------------------------------------------------------------------------------------------------
-//The function 'setup()' gets executed only once upon power-up/reset of Arduino
 void setup() {
-  Serial.begin(9600);           //  setup serial
-  Serial.println("Power-on. Serial Monitor initiated!");          // debug value
-  pinMode(valveRelay1, OUTPUT); // defining the relayPin as digital output
+  
+  pinMode(valveRelay1, OUTPUT);
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
   pinMode(pumpRelay, OUTPUT);
@@ -86,12 +85,49 @@ void setup() {
   digitalWrite(valveRelay2, LOW);
   digitalWrite(valveRelay3, LOW);
   digitalWrite(pumpRelay, LOW);
+  
+  Serial.begin(9600); // open serial port and set the baud rate
+  Serial.println("Automated pump relay control with RTC and ACS712 Current Sensor");
+  Serial.println("***************************************************************");
+
+  // Set the current date, and time in the following format:
+  // seconds, minutes, hours, day of the week, day of the month, month, year
+  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  
+  myRTC.updateTime(); //update of variables for time or accessing the individual elements.
+  
+  // Start printing elements as individuals                                                                 
+  Serial.print("Running from preset RTC Date / Time: ");                                                                  
+  Serial.print(myRTC.dayofmonth);                                                                         
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.month);                                                                              
+  Serial.print("/");                                                                                      
+  Serial.print(myRTC.year);
+  Serial.print(" ");                                                                                      
+  Serial.print(myRTC.hours);                          
+  Serial.print(":");                                                                                      
+  Serial.print(myRTC.minutes);                                                                            
+  Serial.print(":");                                                                                      
+  Serial.println(myRTC.seconds);
 }
 
-//--------------------------------------------------------------------------------------------------
-//The 'setup()' function is done, the 'loop()' function gets executed repeatedly.
 void loop() {
+  myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
 
+  // Start printing RTC time elements as individuals
+  /*                                                                   
+  if (millis() - time_now >= interval)  // non-blocking method. prints RTC time every 2 seconds.
+  {
+    time_now = millis();
+    Serial.print("RTC Time: ");                                                                                                                                                    
+    Serial.print(myRTC.hours);                                                                              
+    Serial.print(":");                                                                                      
+    Serial.print(myRTC.minutes);                                                                            
+    Serial.print(":");                                                                                      
+    Serial.println(myRTC.seconds);                                                                          
+  }
+  */
+/*
   //printing time to serial monitor for observation
   Serial.println((String)"Time:" + h + " h, " + mins + " m, " + secs + " s");
   // In order to read a serial input and write a new time the function described at
@@ -116,8 +152,40 @@ void loop() {
       newTime = "";
     }
   }
+*/
 
+  if (myRTC.hours == valveRelay1_OnHour && myRTC.minutes == valveRelay1_OnMin)
+  {
+    digitalWrite(pumpRelay, HIGH);  // turns on the pump relay
+    Serial.println("*** Pump Relay turned ON ***");
+    
+    Serial.print("Activation time: ");
+    Serial.print(myRTC.hours);  // display the current hour from RTC module                                                                              
+    Serial.print(":");                                                                                      
+    Serial.print(myRTC.minutes);  // display the current minutes from RTC module                                                                              
+    Serial.print(":");                                                                                           
+    Serial.println(myRTC.seconds);  // display the seconds from RTC module  
+    
+    //Serial.print("Pump operation time: ");
+    //Serial.print(pumpRelayTime / 1000); // calculate time of operation      
+    //Serial.println(" minutes");
 
+    // wait 40s then turn pump relay ON
+    timeNow = millis();
+    Serial.println("Wait 40s before activating Pump Relay 1.");
+    //IS THIS NON-BLOCKING??
+    while (millis() < timeNow + waitTime)
+    {
+      //wait approx. 40s
+    }
+    
+  
+  }
+  else if (myRTC.hours == valveRelay1_OffHour && myRTC.minutes == valveRelay1_OffMin)
+  {
+      digitalWrite(pumpRelay,LOW);
+      Serial.println("*** Pump Relay turned OFF ***");
+  }
 
   //------------------------------------------------------------------------------------
   //to turn valve 1 on
