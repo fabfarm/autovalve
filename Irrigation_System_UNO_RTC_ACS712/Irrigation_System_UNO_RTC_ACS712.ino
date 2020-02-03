@@ -81,7 +81,7 @@ void setup() {
 
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  //myRTC.setDS1302Time(50, 34, 11, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
@@ -271,7 +271,7 @@ void loop()
         //wait 5s
       }
       //check current levels again
-      if (IRMS >= currentLimit) // if current limit is exceeded after 10s, turn off pump
+      if (IRMS >= currentLimit) // if current limit is still exceeded after 5s, turn off pump
       {
       digitalWrite(pumpRelay, LOW);
       Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
