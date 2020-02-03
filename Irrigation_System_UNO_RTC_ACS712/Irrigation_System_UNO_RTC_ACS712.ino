@@ -8,8 +8,8 @@
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
 //---------------------------------------------------------------------------------------------------
-//Set ON and OFF times for valves and pump relays
-
+// Set ON and OFF times for valves and pump relays
+//---------------------------------------------------------------------------------------------------
 //Valve 1 --- fruit trees on
 const int valveRelay1_OnHour = 14;
 const int valveRelay1_OnMin = 0;
@@ -35,8 +35,14 @@ const int valveRelay2 = 10;
 const int valveRelay3 = 11;
 const int valveRelay4 = 12;
 
+//---------------------------------------------------------------------------------------------------
+// set current limit
+//---------------------------------------------------------------------------------------------------
+float currentLimit = 100; // set the maximum current limit (Amps)
+//---------------------------------------------------------------------------------------------------
+
 // ACS712 current sensor
-const int ACS_pin = A0;
+const int ACS_pin = A0; // set analog input pin
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // Use scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
 
@@ -53,7 +59,9 @@ unsigned long time_now = 0;
 
 unsigned long waitTimePump = 40000; // wait 40s to activate pump
 unsigned long waitTimeValve = 10000; // wait 10s to deactivate relay
+unsigned long waitTimeCurrent = 5000; // wait 5s to avoid current spikes
 unsigned long timeNow = 0;
+bool pump_state = 0; // pump state initialised to OFF
 
 void setup() {
   pinMode(valveRelay1, OUTPUT);
@@ -130,12 +138,14 @@ void loop()
       //wait 40s
     }
     digitalWrite(pumpRelay, HIGH);
+    pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
   }
   // turn Valve Relay 1 OFF
   else if (myRTC.hours == valveRelay1_OffHour && myRTC.minutes == valveRelay1_OffMin)
   {
     digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 1.");
@@ -172,12 +182,14 @@ void loop()
       //wait 40s
     }
     digitalWrite(pumpRelay, HIGH);
+    pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
   }
   // turn Valve Relay 2 OFF
   else if (myRTC.hours == valveRelay2_OffHour && myRTC.minutes == valveRelay2_OffMin)
   {
     digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 2.");
@@ -214,12 +226,14 @@ void loop()
       //wait 40s
     }
     digitalWrite(pumpRelay, HIGH);
+    pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
   }
   // turn Valve Relay 3 OFF
   else if (myRTC.hours == valveRelay3_OffHour && myRTC.minutes == valveRelay3_OffMin)
   {
     digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
     Serial.println("*** Pump Relay turned OFF ***");
     // wait 10s then turn valve relay OFF
     Serial.println("Wait 10s before deactivating Valve Relay 3.");
@@ -239,29 +253,32 @@ void loop()
   VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
   IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
 
-  Serial.print("Vpp/V: ");
-  Serial.print(VPP, 3); // print to 3 decimal places
-  Serial.print("\tVrms/V: ");
-  Serial.print(VRMS, 3);  // print to 3 decimal places
-  Serial.print("\tIrms/A: ");
-  Serial.println(IRMS, 3);  // print to 3 decimal places
-
+  if (pump_state == 1)
+  {
+    Serial.println("*** Monitoring current threshold level ***");
+    Serial.print("Vpp/V: ");
+    Serial.print(VPP, 3); // print to 3 decimal places
+    Serial.print("\tVrms/V: ");
+    Serial.print(VRMS, 3);  // print to 3 decimal places
+    Serial.print("\tIrms/A: ");
+    Serial.println(IRMS, 3);  // print to 3 decimal places
+    if (IRMS >= currentLimit)
+    {
+      //wait 5 seconds to neglect current spikes
+      timeNow = millis();
+      while (millis() < timeNow + waitTimeCurrent)
+      {
+        //wait 5s
+      }
+      //check current levels again
+      if (IRMS >= currentLimit) // if current limit is exceeded after 10s, turn off pump
+      {
+      digitalWrite(pumpRelay, LOW);
+      Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
+      }
+    }
+  }
 }
-
-// Function to turn on valve
-//void turnValveOn(valve) {
-//  if (h == valve_4_on_h && mins == valve_4_on_mins) {
-//    if (secs == 0) {
-//      digitalWrite(valveRelay4, HIGH);
-//      Serial.println("\n***valve-4 turned on\n");
-//      valve_4_state = 1;
-//    }
-//    if (secs == 40) {
-//      digitalWrite(pumpRelay, HIGH);
-//      Serial.println("\n***pump turned on\n");
-//    }
-//  }
-//}
 
 // function to measure peak-to-peak voltage
 float getVPP()  // continously sampling and logging max and min values
