@@ -12,9 +12,9 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 15;
-const int valveRelay1_OnMin = 44;
+const int valveRelay1_OnMin = 51;
 const int valveRelay1_OffHour = 15;
-const int valveRelay1_OffMin = 46;
+const int valveRelay1_OffMin = 53;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -60,7 +60,7 @@ unsigned long valveTimeNow;
 
 unsigned long waitTimePump = 40000; // wait 40s to activate pump
 unsigned long waitTimeValve = 10000; // wait 10s to deactivate relay
-unsigned long waitTimeCurrent = 5000; // wait a few seconds to avoid current spikes
+unsigned long waitTimeCurrent = 3000; // wait a few seconds to avoid current spikes
 
 bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF
@@ -95,7 +95,7 @@ void setup() {
   Serial.println("********************************************************");
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 43, 12, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  //myRTC.setDS1302Time(0, 49, 15, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
@@ -282,7 +282,9 @@ void loop()
       while (millis() < currentTimeNow + waitTimeCurrent)
       {
         //wait 1s
-        Serial.println("Current spike detected! Waiting 1s.");
+        Serial.print("Current spike detected! Waiting ");
+        Serial.print(waitTimeCurrent/1000);
+        Serial.println(" seconds");
       }
       //check current level again
       if (IRMS >= currentLimit) // check if current limit is still exceeded after waiting, then turn off pump
