@@ -2,7 +2,7 @@
 This repo contains Arduino-based projects for solenoid valve irrigation automation system.
 ***
 * ### Automated water pump controller using Arduino UNO and DS1302 RTC module
-  Arduino UNO R3 with RTC module controls pump relay. Timer set to activate relay every hour for 40 s.
+  Arduino UNO R3 with RTC module controls pump relay activation and deactivation. Timer activates relay every hour for 40 s, irrespective of power outage.
 
 * ### ESP-01 WiFi relay controller via local network and with MIT Android app
   Control relay using ESP-01 via self-hosted web page using IP address (can be configured as dynamic or static) in browser on local network and simultaneously via Android app built using MIT App Inventor (http://ai2.appinventor.mit.edu/).
