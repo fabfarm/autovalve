@@ -1,5 +1,5 @@
 // Automated pump and valve relays for irrigation system
-// Using Arduino UNO, RTC and ACS712 current sensor
+// Using Arduino UNO, DS1302 RTC and ACS712 current sensor
 // version 1.0 alpha
 
 #include <virtuabotixRTC.h> // DS1302 RTC module library
@@ -79,8 +79,8 @@ void setup() {
   digitalWrite(pumpRelay, LOW);
   
   Serial.begin(9600); // open serial port and set the baud rate
-  Serial.println("Automated pump relay with RTC and ACS712 Current Sensor");
-  Serial.println("***************************************************************");
+  Serial.println("Automated irrigation system with RTC and Current Sensor");
+  Serial.println("********************************************************");
 
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
@@ -104,13 +104,13 @@ void setup() {
 
 void loop() 
 {
-  myRTC.updateTime(); // update of variables for time or accessing the individual elements.                                                                                 
+  myRTC.updateTime(); // update of variables for time or accessing the individual elements.      
 
   // Start printing RTC time elements as individuals                                                                  
   if (millis() - time_now >= interval)  // non-blocking method. prints RTC time every 2 seconds.
   {
     time_now = millis();
-    Serial.print("RTC Time: ");                                                                                                                                                    
+    Serial.print("RTC Time: ");                     
     Serial.print(myRTC.hours);                                                                              
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);                                                                            
@@ -127,9 +127,9 @@ void loop()
     digitalWrite(valveRelay1, HIGH);  // turns on the pump relay
     Serial.println("*** Valve Relay 1 turned ON ***");
     Serial.print("Activation time: ");
-    Serial.print(myRTC.hours);  // display the current hour from RTC module                                                                              
+    Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
-    Serial.print(myRTC.minutes);  // display the current minutes from RTC module                                                                              
+    Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
@@ -171,9 +171,9 @@ void loop()
     digitalWrite(valveRelay2, HIGH);  // turns on the pump relay
     Serial.println("*** Valve Relay 2 turned ON ***");
     Serial.print("Activation time: ");
-    Serial.print(myRTC.hours);  // display the current hour from RTC module                                                                              
+    Serial.print(myRTC.hours);  // display the current hour from RTC module        
     Serial.print(":");                                                                                      
-    Serial.print(myRTC.minutes);  // display the current minutes from RTC module                                                                              
+    Serial.print(myRTC.minutes);  // display the current minutes from RTC module               
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
@@ -215,10 +215,10 @@ void loop()
     digitalWrite(valveRelay3, HIGH);  // turns on the pump relay
     Serial.println("*** Valve Relay 3 turned ON ***");
     Serial.print("Activation time: ");
-    Serial.print(myRTC.hours);  // display the current hour from RTC module                                                                              
-    Serial.print(":");                                                                                      
-    Serial.print(myRTC.minutes);  // display the current minutes from RTC module                                                                              
-    Serial.print(":");                                                                                           
+    Serial.print(myRTC.hours);  // display the current hour from RTC module        
+    Serial.print(":");                                                           
+    Serial.print(myRTC.minutes);  // display the current minutes from RTC module       
+    Serial.print(":");               
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Wait 40s before activating Pump Relay.");
