@@ -15,21 +15,20 @@ int setMinutes = 0, setSeconds = 0; // set minutes and seconds for pump activati
 long pumpRelayTime = 40000; //set pump operation time in ms. int datatype can only hold max value 32767.
 const int pumpRelay = 8;  // set pump relay pin
 
-unsigned long interval = 2000;  // prints RTC time every 2000 ms or 2 secs
+unsigned long interval = 2000;  // print RTC time every 2s
 unsigned long time_now = 0;
 
 void setup() {
   Serial.begin(9600); // open serial port and set the baud rate
-  Serial.println("Automated pump relay control with RTC (version 2)");
-  Serial.println("*************************************************");
+  Serial.println("Automated pump relay control with RTC (Fixed Reset)");
+  Serial.println("**************************************************");
   pinMode(pumpRelay, OUTPUT); // set digital pin pumpRelay as an output
-  pinMode(LED_BUILTIN, OUTPUT); // set digital pin LED_BUILTIN as an output (used for testing only)
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
   //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   
-  myRTC.updateTime(); //update of variables for time or accessing the individual elements.
+  myRTC.updateTime(); // update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
   Serial.print("Running from preset RTC Date / Time: ");                                                                  
@@ -70,7 +69,6 @@ void loop() {
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
                                                                                    
     digitalWrite(pumpRelay, HIGH);  //turns on the pump relay
-    digitalWrite(LED_BUILTIN, HIGH);   //turns on the on-board LED (used for testing)
         
     Serial.println("*** Pump relay turned ON ***");
     Serial.print("Pump operation time: ");
@@ -78,7 +76,6 @@ void loop() {
     Serial.println(" seconds");
     delay(pumpRelayTime); // pump relay operation time
     digitalWrite(pumpRelay, LOW); // turn off the pump relay
-    digitalWrite(LED_BUILTIN, LOW);  // turn off the on-board LED (used for testing)
     Serial.println("*** Pump relay turned OFF ***");                                                                                                                    
   }
 }
