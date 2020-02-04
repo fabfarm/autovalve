@@ -71,12 +71,12 @@ float getIRMS()  // continously sampling and logging max and min values
   VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
   IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
 
-//  Serial.print("Vpp/V: ");
-//  Serial.print(VPP, 3); // print to 3 decimal places
-//  Serial.print("\tVrms/V: ");
-//  Serial.print(VRMS, 3);  // print to 3 decimal places
-//  Serial.print("\tIrms/A: ");
-//  Serial.println(IRMS, 3);  // print to 3 decimal places
+  Serial.print("Vpp/V: ");
+  Serial.print(VPP, 3); // print to 3 decimal places
+  Serial.print("\tVrms/V: ");
+  Serial.print(VRMS, 3);  // print to 3 decimal places
+  Serial.print("\tIrms/A: ");
+  Serial.println(IRMS, 3);  // print to 3 decimal places
   
   return IRMS;
 }
