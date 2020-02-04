@@ -11,10 +11,10 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 // Set ON and OFF timers
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 15;
-const int valveRelay1_OnMin = 51;
-const int valveRelay1_OffHour = 15;
-const int valveRelay1_OffMin = 53;
+const int valveRelay1_OnHour = 22;
+const int valveRelay1_OnMin = 6;
+const int valveRelay1_OffHour = 22;
+const int valveRelay1_OffMin = 9;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -299,6 +299,34 @@ void loop()
       Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
       count = 0; // reset count
+      // turning off valve relay
+      if (valve_1_state == 1)
+      {
+        // wait 10s then turn valve relay OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 1.");
+        delay(10000);
+        digitalWrite(valveRelay1, LOW);
+        valve_1_state = 0;
+        Serial.println("*** Valve Relay 1 turned OFF ***");
+      }
+      if (valve_2_state == 1)
+      {
+        // wait 10s then turn valve relay OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 2.");
+        delay(10000);
+        digitalWrite(valveRelay2, LOW);
+        valve_2_state = 0;
+        Serial.println("*** Valve Relay 2 turned OFF ***");
+      }
+      if (valve_3_state == 1)
+      {
+        // wait 10s then turn valve relay OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 3.");
+        delay(10000);
+        digitalWrite(valveRelay3, LOW);
+        valve_3_state = 0;
+        Serial.println("*** Valve Relay 3 turned OFF ***");
+      }
     }
   }
   }
