@@ -48,18 +48,16 @@ const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
 
 float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
-//voltage at the output terminal with reference to ground when no signal is applied to input.
+// voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
 unsigned long RTCtimeInterval = 3000;  // prints RTC time every time interval
 unsigned long RTCtimeNow;
 
-unsigned long currentTimeNow;
 unsigned long pumpTimeNow;
 unsigned long valveTimeNow;
 
 unsigned long waitTimePump = 40000; // wait 40s to activate pump
 unsigned long waitTimeValve = 10000; // wait 10s to deactivate relay
-unsigned long waitTimeCurrent = 3000; // wait a few seconds to avoid current spikes
 
 bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF

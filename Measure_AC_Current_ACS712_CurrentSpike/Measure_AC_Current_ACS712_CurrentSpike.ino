@@ -13,7 +13,7 @@ float CurrentLimit = 2.0; // set the maximum current threshold in Amps
 int count = 0; // initialise count to zero
 
 float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
-// voltage offset at analog terminal with reference to ground when no signal applied to the input.
+// voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
 void setup() {
   Serial.begin(9600);
