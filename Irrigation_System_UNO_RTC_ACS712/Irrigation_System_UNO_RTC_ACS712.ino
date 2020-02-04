@@ -281,10 +281,16 @@ void loop()
       currentTimeNow = millis();
       while (millis() < currentTimeNow + waitTimeCurrent)
       {
-        //wait 1s
+        //wait a short time to check if current spike persists
         Serial.print("Current spike detected! Waiting ");
         Serial.print(waitTimeCurrent/1000);
         Serial.println(" seconds");
+        Serial.print("Vpp/V: ");
+        Serial.print(VPP, 3); // print to 3 decimal places
+        Serial.print("\tVrms/V: ");
+        Serial.print(VRMS, 3);  // print to 3 decimal places
+        Serial.print("\tIrms/A: ");
+        Serial.println(IRMS, 3);  // print to 3 decimal places
       }
       //check current level again
       if (IRMS >= currentLimit) // check if current limit is still exceeded after waiting, then turn off pump
