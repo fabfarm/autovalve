@@ -9,7 +9,7 @@
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
 //---------------------------------------------------------------------------------------------------
-// Set ON and OFF timers
+// Set ON and OFF times for valve relays
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 21;
@@ -30,10 +30,11 @@ const int valveRelay3_OffHour = 17;
 const int valveRelay3_OffMin = 20;
 
 //---------------------------------------------------------------------------------------------------
-// Set current limit for pump
+// Set lower and upper current limits for pump relay
 //---------------------------------------------------------------------------------------------------
 float LowCurrentLimit = 0.2; // set the minimum current threshold in Amps
 float HighCurrentLimit = 1.1; // set the maximum current threshold in Amps
+//---------------------------------------------------------------------------------------------------
 
 float AC_current; // AC current Irms value
 int count = 0; // initialise current limit count to zero
