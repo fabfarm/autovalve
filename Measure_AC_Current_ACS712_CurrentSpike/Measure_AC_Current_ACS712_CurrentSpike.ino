@@ -9,7 +9,7 @@ const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
 
 float AC_current; // store AC current Irms value
-float CurrentLimit = 2.0; // set the maximum current threshold in Amps
+float CurrentLimit = 0.3; // set the maximum current threshold in Amps
 int count = 0; // initialise count to zero
 
 float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
@@ -25,18 +25,27 @@ void loop() {
 
   if (AC_current >= CurrentLimit)
   {
-    Serial.println("Current spike detected and it exceeded threshold value.");
-    count++;
-    if (count == 2)
+    count++; // increment count by 1
+    Serial.print("*** Current spike detected! ");
+    Serial.print(count);
+    Serial.println(" out of 3 ***");
+    
+    //if current spike detected 3 counts in a row
+    if (count == 3) // if current threshold exceeded for about 10s, turn off pump relay
     {
       //digitalWrite(pumpRelay, LOW); // turn pump off
-      Serial.println("Current threshold value exceeded!");
+      Serial.println("*** Current threshold value exceeded! ***");
       count = 0; // reset count
     }
   }
-  
-  Serial.print("Irms/A: ");
-  Serial.println(AC_current, 3);  // print to 3 decimal places
+  else
+  {
+    if (count != 0)
+    {
+      Serial.println("*** Current spike count reset ***");
+    }
+    count = 0; // reset current spike count
+  }
 }
 
 // function to measure peak-to-peak voltage and calculate Irms value

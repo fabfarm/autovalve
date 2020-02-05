@@ -11,10 +11,10 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 // Set ON and OFF timers
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 22;
-const int valveRelay1_OnMin = 6;
-const int valveRelay1_OffHour = 22;
-const int valveRelay1_OffMin = 9;
+const int valveRelay1_OnHour = 11;
+const int valveRelay1_OnMin = 15;
+const int valveRelay1_OffHour = 11;
+const int valveRelay1_OffMin = 18;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -31,7 +31,7 @@ const int valveRelay3_OffMin = 20;
 //---------------------------------------------------------------------------------------------------
 // Set current limit for pump
 //---------------------------------------------------------------------------------------------------
-float CurrentLimit = 2.0; // set the maximum current threshold in Amps
+float CurrentLimit = 1.0; // set the maximum current threshold in Amps
 
 float AC_current; // store AC current Irms value
 int count = 0; // initialise count to zero
@@ -108,7 +108,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(0, 49, 15, 1, 3, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  //myRTC.setDS1302Time(10, 24, 12, 1, 5, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
@@ -171,7 +171,7 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay OFF
+    // wait 10s then turn valve relay 1 OFF
     Serial.println("Waiting 10s before deactivating Valve Relay 1.");
     delay(10000);
     digitalWrite(valveRelay1, LOW);
@@ -221,7 +221,7 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay OFF
+    // wait 10s then turn valve relay 2 OFF
     Serial.println("Waiting 10s before deactivating Valve Relay 2.");
     delay(10000);
     digitalWrite(valveRelay2, LOW);
@@ -271,7 +271,7 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay OFF
+    // wait 10s then turn valve relay 3 OFF
     Serial.println("Waiting 10s before deactivating Valve Relay 3.");
     delay(10000);
     digitalWrite(valveRelay3, LOW);
@@ -291,18 +291,34 @@ void loop()
     
   if (AC_current >= CurrentLimit)
   {
-    Serial.println("Current spike detected and it exceeded threshold value.");
-    count++;
-    if (count == 2)
+    count++; // increment count by 1
+    Serial.print("*** Current spike detected! ");
+    Serial.print(count);
+    Serial.println(" out of 3 ***");
+
+    //if current spike detected 3 counts in a row
+    if (count == 3) // if current threshold exceeded for about 10s, turn off pump relay
     {
       digitalWrite(pumpRelay, LOW); // turn pump off
       Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
-      count = 0; // reset count
+      count = 0; // reset current spike count
+    }
+  }
+  else
+  {
+    if (count != 0)
+    {
+      Serial.println("*** Current spike count reset ***");
+    }
+    count = 0; // reset current spike count
+  }
+      
+    
       // turning off valve relay
       if (valve_1_state == 1)
       {
-        // wait 10s then turn valve relay OFF
+        // wait 10s then turn valve relay 1 OFF
         Serial.println("Waiting 10s before deactivating Valve Relay 1.");
         delay(10000);
         digitalWrite(valveRelay1, LOW);
@@ -311,7 +327,7 @@ void loop()
       }
       if (valve_2_state == 1)
       {
-        // wait 10s then turn valve relay OFF
+        // wait 10s then turn valve relay 2 OFF
         Serial.println("Waiting 10s before deactivating Valve Relay 2.");
         delay(10000);
         digitalWrite(valveRelay2, LOW);
@@ -320,7 +336,7 @@ void loop()
       }
       if (valve_3_state == 1)
       {
-        // wait 10s then turn valve relay OFF
+        // wait 10s then turn valve relay 3 OFF
         Serial.println("Waiting 10s before deactivating Valve Relay 3.");
         delay(10000);
         digitalWrite(valveRelay3, LOW);
@@ -328,8 +344,7 @@ void loop()
         Serial.println("*** Valve Relay 3 turned OFF ***");
       }
     }
-  }
-  }
+  
   
   //------------------------------------------------------------------------------------
   // Print RTC time at regular interval 
