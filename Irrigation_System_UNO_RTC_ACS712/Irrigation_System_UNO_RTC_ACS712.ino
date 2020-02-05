@@ -80,7 +80,7 @@ void setup() {
   Serial.println("Automated irrigation system with RTC and Current Sensor");
   Serial.println("********************************************************");
   Serial.println("User Configuration:");
-  Serial.println("--------------------------------------------------------");
+  Serial.println("========================================================");
   Serial.println("RTC-based Timers:");
   Serial.print("Valve Relay 1 Timer ON: ");
   Serial.print(valveRelay1_OnHour);
