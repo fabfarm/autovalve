@@ -11,10 +11,10 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 // Set ON and OFF timers
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 11;
-const int valveRelay1_OnMin = 15;
-const int valveRelay1_OffHour = 11;
-const int valveRelay1_OffMin = 18;
+const int valveRelay1_OnHour = 17;
+const int valveRelay1_OnMin = 3;
+const int valveRelay1_OffHour = 17;
+const int valveRelay1_OffMin = 5;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -31,10 +31,10 @@ const int valveRelay3_OffMin = 20;
 //---------------------------------------------------------------------------------------------------
 // Set current limit for pump
 //---------------------------------------------------------------------------------------------------
-float CurrentLimit = 1.0; // set the maximum current threshold in Amps
+float CurrentLimit = 1.1; // set the maximum current threshold in Amps
 
-float AC_current; // store AC current Irms value
-int count = 0; // initialise count to zero
+float AC_current; // AC current Irms value
+int count = 0; // initialise current spike count to zero
 
 // pump and relay pins
 const int pumpRelay = 8;
@@ -47,7 +47,7 @@ const int ACS712_sensor = A0; // set the analog pin connected to the ACS712 curr
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
 
-float VRMSoffset = 0.0; //0.025; // set quiescent Vrms output voltage
+float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 // voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
 unsigned long RTCtimeInterval = 3000;  // prints RTC time every time interval
@@ -291,11 +291,11 @@ void loop()
     
   if (AC_current >= CurrentLimit)
   {
-    count++; // increment count by 1
+    count++; // increment current spike count by 1
     Serial.print("*** Current spike detected! ");
     Serial.print(count);
     Serial.println(" out of 3 ***");
-
+    
     //if current spike detected 3 counts in a row
     if (count == 3) // if current threshold exceeded for about 10s, turn off pump relay
     {
