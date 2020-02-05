@@ -12,9 +12,9 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 17;
-const int valveRelay1_OnMin = 3;
+const int valveRelay1_OnMin = 36;
 const int valveRelay1_OffHour = 17;
-const int valveRelay1_OffMin = 5;
+const int valveRelay1_OffMin = 38;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -79,7 +79,9 @@ void setup() {
   Serial.begin(9600); // open serial port and set the baud rate
   Serial.println("Automated irrigation system with RTC and Current Sensor");
   Serial.println("********************************************************");
-  Serial.println("Preset RTC-based Timers:");
+  Serial.println("User Configuration:");
+  Serial.println("--------------------------------------------------------");
+  Serial.println("RTC-based Timers:");
   Serial.print("Valve Relay 1 Timer ON: ");
   Serial.print(valveRelay1_OnHour);
   Serial.print(":");
@@ -104,6 +106,10 @@ void setup() {
   Serial.print(valveRelay3_OffHour);
   Serial.print(":");
   Serial.println(valveRelay3_OffMin);
+  Serial.println("--------------------------------------------------------");
+  Serial.print("Current limit set to: ");
+  Serial.print(CurrentLimit);
+  Serial.println(" Amps");
   Serial.println("********************************************************");
   
   // Set the current date, and time in the following format:
