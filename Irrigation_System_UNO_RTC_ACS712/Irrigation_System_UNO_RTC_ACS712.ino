@@ -13,15 +13,15 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 21;
-const int valveRelay1_OnMin = 31;
+const int valveRelay1_OnMin = 44;
 const int valveRelay1_OffHour = 21;
-const int valveRelay1_OffMin = 33;
+const int valveRelay1_OffMin = 46;
 
 // Timers - cypress
-const int valveRelay2_OnHour = 10;
-const int valveRelay2_OnMin = 0;
-const int valveRelay2_OffHour = 11;
-const int valveRelay2_OffMin = 0;
+const int valveRelay2_OnHour = 21;
+const int valveRelay2_OnMin = 47;
+const int valveRelay2_OffHour = 21;
+const int valveRelay2_OffMin = 49;
 
 // Timers - vegetable garden
 const int valveRelay3_OnHour = 17;
