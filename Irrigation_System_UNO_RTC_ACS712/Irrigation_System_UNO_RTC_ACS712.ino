@@ -1,6 +1,7 @@
 // Automated pump and valve relays for irrigation system
 // Using Arduino UNO, DS1302 RTC and ACS712 current sensor
-// version 1.0
+// version 1.1
+//Changelog: Low and high current limits
 
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
@@ -12,9 +13,9 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 17;
-const int valveRelay1_OnMin = 36;
+const int valveRelay1_OnMin = 52;
 const int valveRelay1_OffHour = 17;
-const int valveRelay1_OffMin = 38;
+const int valveRelay1_OffMin = 54;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -31,7 +32,8 @@ const int valveRelay3_OffMin = 20;
 //---------------------------------------------------------------------------------------------------
 // Set current limit for pump
 //---------------------------------------------------------------------------------------------------
-float CurrentLimit = 1.1; // set the maximum current threshold in Amps
+float LowCurrentLimit = 0.2; // set the minimum current threshold in Amps
+float HighCurrentLimit = 1.1; // set the maximum current threshold in Amps
 
 float AC_current; // AC current Irms value
 int count = 0; // initialise current spike count to zero
@@ -81,7 +83,7 @@ void setup() {
   Serial.println("********************************************************");
   Serial.println("User Configuration:");
   Serial.println("========================================================");
-  Serial.println("RTC-based Timers:");
+  Serial.println("RTC-based Valve Relay Timers (Hours:Minutes)");
   Serial.print("Valve Relay 1 Timer ON: ");
   Serial.print(valveRelay1_OnHour);
   Serial.print(":");
@@ -107,8 +109,11 @@ void setup() {
   Serial.print(":");
   Serial.println(valveRelay3_OffMin);
   Serial.println("--------------------------------------------------------");
-  Serial.print("Current limit set to: ");
-  Serial.print(CurrentLimit);
+  Serial.print("Low Current Limit: ");
+  Serial.print(LowCurrentLimit);
+  Serial.println(" Amps");
+  Serial.print("High Current Limit: ");
+  Serial.print(HighCurrentLimit);
   Serial.println(" Amps");
   Serial.println("********************************************************");
   
@@ -292,13 +297,69 @@ void loop()
   
   if (pump_state == 1) // if pump is on, start monitoring current level
   {
-    Serial.println("*** Monitoring current threshold level ***");
+    //Serial.println("*** Monitoring current threshold level ***");
     AC_current = getIRMS(); // current sensor value is returned about every 3s
-    
-  if (AC_current >= CurrentLimit)
+
+  // check low current threshold
+  if (AC_current <= LowCurrentLimit)
   {
     count++; // increment current spike count by 1
-    Serial.print("*** Current spike detected! ");
+    Serial.print("*** Low current detected! ");
+    Serial.print(count);
+    Serial.println(" out of 3 ***");
+    
+    //if low current spike detected 3 counts in a row
+    if (count == 3) // if current threshold low for about 10s, turn off pump relay
+    {
+      digitalWrite(pumpRelay, LOW); // turn pump off
+      Serial.println("*** Low current limit! Pump Relay turned OFF ***");
+      pump_state = 0; // stop monitoring current level
+      count = 0; // reset current spike count
+      
+      // turning off valve relay
+      if (valve_1_state == 1)
+      {
+        // wait 10s then turn valve relay 1 OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 1.");
+        delay(10000);
+        digitalWrite(valveRelay1, LOW);
+        valve_1_state = 0;
+        Serial.println("*** Valve Relay 1 turned OFF ***");
+      }
+      if (valve_2_state == 1)
+      {
+        // wait 10s then turn valve relay 2 OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 2.");
+        delay(10000);
+        digitalWrite(valveRelay2, LOW);
+        valve_2_state = 0;
+        Serial.println("*** Valve Relay 2 turned OFF ***");
+      }
+      if (valve_3_state == 1)
+      {
+        // wait 10s then turn valve relay 3 OFF
+        Serial.println("Waiting 10s before deactivating Valve Relay 3.");
+        delay(10000);
+        digitalWrite(valveRelay3, LOW);
+        valve_3_state = 0;
+        Serial.println("*** Valve Relay 3 turned OFF ***");
+      }
+    }
+  }
+  else
+  {
+    if (count != 0)
+    {
+      Serial.println("*** Low current limit count reset ***");
+    }
+    count = 0; // reset low current limit count
+  }
+
+  // check high current threshold
+  if (AC_current >= HighCurrentLimit)
+  {
+    count++; // increment current spike count by 1
+    Serial.print("*** High current detected! ");
     Serial.print(count);
     Serial.println(" out of 3 ***");
     
@@ -306,7 +367,7 @@ void loop()
     if (count == 3) // if current threshold exceeded for about 10s, turn off pump relay
     {
       digitalWrite(pumpRelay, LOW); // turn pump off
-      Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
+      Serial.println("*** High current limit! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
       count = 0; // reset current spike count
     
@@ -344,10 +405,11 @@ void loop()
   {
     if (count != 0)
     {
-      Serial.println("*** Current spike count reset ***");
+      Serial.println("*** High current limit count reset ***");
     }
     count = 0; // reset current spike count
   }
+  
   }
   
   
