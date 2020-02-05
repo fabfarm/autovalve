@@ -303,17 +303,6 @@ void loop()
       Serial.println("*** Current limit exceeded! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
       count = 0; // reset current spike count
-    }
-  }
-  else
-  {
-    if (count != 0)
-    {
-      Serial.println("*** Current spike count reset ***");
-    }
-    count = 0; // reset current spike count
-  }
-      
     
       // turning off valve relay
       if (valve_1_state == 1)
@@ -344,6 +333,16 @@ void loop()
         Serial.println("*** Valve Relay 3 turned OFF ***");
       }
     }
+  }
+  else
+  {
+    if (count != 0)
+    {
+      Serial.println("*** Current spike count reset ***");
+    }
+    count = 0; // reset current spike count
+  }
+  }
   
   
   //------------------------------------------------------------------------------------
