@@ -118,7 +118,7 @@ void setup() {
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
-  Serial.print("Running from preset RTC Date / Time: ");                                                                  
+  Serial.print("Preset RTC Date and Time: ");                                                                  
   Serial.print(myRTC.dayofmonth);                                                                         
   Serial.print("/");                                                                                      
   Serial.print(myRTC.month);                                                                              
