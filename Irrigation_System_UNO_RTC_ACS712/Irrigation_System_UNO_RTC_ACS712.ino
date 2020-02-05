@@ -1,7 +1,7 @@
 // Automated pump and valve relays for irrigation system
 // Using Arduino UNO, DS1302 RTC and ACS712 current sensor
 // version 1.1
-//Changelog: Low and high current limits
+//Changelog: Added low and high current limits
 
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
@@ -12,10 +12,10 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 // Set ON and OFF timers
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 17;
-const int valveRelay1_OnMin = 52;
-const int valveRelay1_OffHour = 17;
-const int valveRelay1_OffMin = 54;
+const int valveRelay1_OnHour = 21;
+const int valveRelay1_OnMin = 31;
+const int valveRelay1_OffHour = 21;
+const int valveRelay1_OffMin = 33;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 10;
@@ -36,7 +36,7 @@ float LowCurrentLimit = 0.2; // set the minimum current threshold in Amps
 float HighCurrentLimit = 1.1; // set the maximum current threshold in Amps
 
 float AC_current; // AC current Irms value
-int count = 0; // initialise current spike count to zero
+int count = 0; // initialise current limit count to zero
 
 // pump and relay pins
 const int pumpRelay = 8;
@@ -58,13 +58,15 @@ unsigned long RTCtimeNow;
 unsigned long pumpTimeNow;
 unsigned long valveTimeNow;
 
-unsigned long waitTimePump = 40000; // wait 40s to activate pump
-unsigned long waitTimeValve = 10000; // wait 10s to deactivate relay
+unsigned long waitTimePumpOn = 40000; // wait 40s to activate pump
+unsigned long waitTimeValveOff = 20000; // wait 20s to deactivate relay
 
 bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF
 bool valve_3_state = 0; // valve 3 state initialised to OFF
 bool pump_state = 0; // pump state initialised to OFF
+bool LowCurrentLimit_state = 0;
+bool HighCurrentLimit_state = 0;
 
 void setup() {
   pinMode(valveRelay1, OUTPUT);
@@ -119,7 +121,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(10, 24, 12, 1, 5, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  //myRTC.setDS1302Time(10, 7, 20, 1, 5, 2, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   myRTC.updateTime(); //update of variables for time or accessing the individual elements.
   
   // Start printing elements as individuals                                                                 
@@ -142,7 +144,7 @@ void loop()
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.      
   
   //------------------------------------------------------------------------------------
-  // Valve Relay 1 control
+  // Valve Relay 1 timer control
   //------------------------------------------------------------------------------------
   
   // turn Valve Relay 1 ON
@@ -161,7 +163,7 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Waiting 40s before activating Pump Relay.");
-    delay(40000);
+    delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
@@ -182,9 +184,9 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay 1 OFF
-    Serial.println("Waiting 10s before deactivating Valve Relay 1.");
-    delay(10000);
+    // wait then turn valve relay 1 OFF
+    Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+    delay(waitTimeValveOff);
     digitalWrite(valveRelay1, LOW);
     valve_1_state = 0;
     Serial.println("*** Valve Relay 1 turned OFF ***");
@@ -192,7 +194,7 @@ void loop()
   }
   
   //------------------------------------------------------------------------------------
-  // Valve Relay 2 control
+  // Valve Relay 2 timer control
   //------------------------------------------------------------------------------------
   
   // turn Valve Relay 2 ON
@@ -211,7 +213,7 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Waiting 40s before activating Pump Relay.");
-    delay(40000);
+    delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
@@ -232,9 +234,9 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay 2 OFF
-    Serial.println("Waiting 10s before deactivating Valve Relay 2.");
-    delay(10000);
+    // wait then turn valve relay 2 OFF
+    Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+    delay(waitTimeValveOff);
     digitalWrite(valveRelay2, LOW);
     valve_2_state = 0;
     Serial.println("*** Valve Relay 2 turned OFF ***");
@@ -242,7 +244,7 @@ void loop()
   }
 
   //------------------------------------------------------------------------------------
-  // Valve Relay 3 control
+  // Valve Relay 3 timer control
   //------------------------------------------------------------------------------------
   
   // turn Valve Relay 3 ON
@@ -261,7 +263,7 @@ void loop()
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
     // wait 40s then turn pump relay ON
     Serial.println("Waiting 40s before activating Pump Relay.");
-    delay(40000);
+    delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
     Serial.println("*** Pump Relay turned ON ***");
@@ -282,9 +284,9 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait 10s then turn valve relay 3 OFF
-    Serial.println("Waiting 10s before deactivating Valve Relay 3.");
-    delay(10000);
+    // wait then turn valve relay 3 OFF
+    Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+    delay(waitTimeValveOff);
     digitalWrite(valveRelay3, LOW);
     valve_3_state = 0;
     Serial.println("*** Valve Relay 3 turned OFF ***");
@@ -299,118 +301,119 @@ void loop()
   {
     //Serial.println("*** Monitoring current threshold level ***");
     AC_current = getIRMS(); // current sensor value is returned about every 3s
-
+  
   // check low current threshold
   if (AC_current <= LowCurrentLimit)
   {
-    count++; // increment current spike count by 1
+    LowCurrentLimit_state = 1;
+    count++; // increment current limit count by 1
     Serial.print("*** Low current detected! ");
     Serial.print(count);
     Serial.println(" out of 3 ***");
     
-    //if low current spike detected 3 counts in a row
+    //if low current limit detected 3 counts in a row
     if (count == 3) // if current threshold low for about 10s, turn off pump relay
     {
       digitalWrite(pumpRelay, LOW); // turn pump off
       Serial.println("*** Low current limit! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
-      count = 0; // reset current spike count
+      count = 0; // reset current limit count
       
       // turning off valve relay
       if (valve_1_state == 1)
       {
-        // wait 10s then turn valve relay 1 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 1.");
-        delay(10000);
+        // wait then turn valve relay 1 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay1, LOW);
         valve_1_state = 0;
         Serial.println("*** Valve Relay 1 turned OFF ***");
       }
       if (valve_2_state == 1)
       {
-        // wait 10s then turn valve relay 2 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 2.");
-        delay(10000);
+        // wait then turn valve relay 2 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay2, LOW);
         valve_2_state = 0;
         Serial.println("*** Valve Relay 2 turned OFF ***");
       }
       if (valve_3_state == 1)
       {
-        // wait 10s then turn valve relay 3 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 3.");
-        delay(10000);
+        // wait then turn valve relay 3 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay3, LOW);
         valve_3_state = 0;
         Serial.println("*** Valve Relay 3 turned OFF ***");
       }
     }
-  }
-  else
-  {
-    if (count != 0)
-    {
-      Serial.println("*** Low current limit count reset ***");
-    }
-    count = 0; // reset low current limit count
   }
 
   // check high current threshold
   if (AC_current >= HighCurrentLimit)
   {
-    count++; // increment current spike count by 1
+    HighCurrentLimit_state = 1;
+    count++; // increment current limit count by 1
     Serial.print("*** High current detected! ");
     Serial.print(count);
     Serial.println(" out of 3 ***");
     
-    //if current spike detected 3 counts in a row
+    //if current limit detected 3 counts in a row
     if (count == 3) // if current threshold exceeded for about 10s, turn off pump relay
     {
       digitalWrite(pumpRelay, LOW); // turn pump off
       Serial.println("*** High current limit! Pump Relay turned OFF ***");
       pump_state = 0; // stop monitoring current level
-      count = 0; // reset current spike count
+      count = 0; // reset current limit count
     
       // turning off valve relay
       if (valve_1_state == 1)
       {
-        // wait 10s then turn valve relay 1 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 1.");
-        delay(10000);
+        // wait then turn valve relay 1 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay1, LOW);
         valve_1_state = 0;
         Serial.println("*** Valve Relay 1 turned OFF ***");
       }
       if (valve_2_state == 1)
       {
-        // wait 10s then turn valve relay 2 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 2.");
-        delay(10000);
+        // wait then turn valve relay 2 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay2, LOW);
         valve_2_state = 0;
         Serial.println("*** Valve Relay 2 turned OFF ***");
       }
       if (valve_3_state == 1)
       {
-        // wait 10s then turn valve relay 3 OFF
-        Serial.println("Waiting 10s before deactivating Valve Relay 3.");
-        delay(10000);
+        // wait then turn valve relay 3 OFF
+        Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+        delay(waitTimeValveOff);
         digitalWrite(valveRelay3, LOW);
         valve_3_state = 0;
         Serial.println("*** Valve Relay 3 turned OFF ***");
       }
     }
   }
-  else
+
+  // if AC current within acceptable limits, reset current limit count
+  if (AC_current < HighCurrentLimit && AC_current > LowCurrentLimit)
   {
-    if (count != 0)
+    if (count != 0 && LowCurrentLimit_state == 1)
+    {
+      Serial.println("*** Low current limit count reset ***");
+      LowCurrentLimit_state = 0;
+    }
+    if (count != 0 && HighCurrentLimit_state == 1)
     {
       Serial.println("*** High current limit count reset ***");
+      HighCurrentLimit_state = 0;
     }
-    count = 0; // reset current spike count
-  }
-  
-  }
+    count = 0; // reset current limit count
+ }
+}
   
   
   //------------------------------------------------------------------------------------
