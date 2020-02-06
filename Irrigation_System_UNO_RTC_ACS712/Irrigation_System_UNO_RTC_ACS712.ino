@@ -14,10 +14,10 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 // Set ON and OFF times for valve relays
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 14;
-const int valveRelay1_OnMin = 44;
-const int valveRelay1_OffHour = 14;
-const int valveRelay1_OffMin = 46;
+const int valveRelay1_OnHour = 16;
+const int valveRelay1_OnMin = 16;
+const int valveRelay1_OffHour = 16;
+const int valveRelay1_OffMin = 19;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 21;
@@ -45,8 +45,7 @@ unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation 
 
 //***************************************************************************************************
 
-float AC_current; // AC current Irms value
-int count = 0; // initialise current limit count to zero
+/////////////////// Pins and current sensor configuration ////////////////////
 
 // pump and relay pins
 const int pumpRelay = 8;
@@ -59,10 +58,16 @@ const int ACS712_sensor = A0; // set the analog pin connected to the ACS712 curr
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
 
+/////////////////// Do Not Change Below This Line ////////////////////
+
 float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 // voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
-unsigned long RTCtimeInterval = 3000;  // prints RTC time every time interval
+float AC_current; // AC current Irms value
+int count = 0; // initialise current limit count to zero
+unsigned long MinTimePumpOperation = 8000; // minimum time (ms) for pump operation (due to immediate low or high current) is greater than 8s.
+
+unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
 unsigned long RTCtimeNow;
 
 bool valve_1_state = 0; // valve 1 state initialised to OFF
@@ -90,27 +95,27 @@ void setup() {
   Serial.println("User Configuration:");
   Serial.println("========================================================");
   Serial.println("RTC-based Valve Relay Timers (Hours:Minutes)");
-  Serial.print("Valve Relay 1 Timer ON: ");
+  Serial.print("Valve Relay 1 ON: ");
   Serial.print(valveRelay1_OnHour);
   Serial.print(":");
   Serial.println(valveRelay1_OnMin);
-  Serial.print("Valve Relay 1 Timer OFF: ");
+  Serial.print("Valve Relay 1 OFF: ");
   Serial.print(valveRelay1_OffHour);
   Serial.print(":");
   Serial.println(valveRelay1_OffMin);
-  Serial.print("Valve Relay 2 Timer ON: ");
+  Serial.print("Valve Relay 2 ON: ");
   Serial.print(valveRelay2_OnHour);
   Serial.print(":");
   Serial.println(valveRelay2_OnMin);
-  Serial.print("Valve Relay 2 Timer OFF: ");
+  Serial.print("Valve Relay 2 OFF: ");
   Serial.print(valveRelay2_OffHour);
   Serial.print(":");
   Serial.println(valveRelay2_OffMin);
-  Serial.print("Valve Relay 3 Timer ON: ");
+  Serial.print("Valve Relay 3 ON: ");
   Serial.print(valveRelay3_OnHour);
   Serial.print(":");
   Serial.println(valveRelay3_OnMin);
-  Serial.print("Valve Relay 3 Timer OFF: ");
+  Serial.print("Valve Relay 3 OFF: ");
   Serial.print(valveRelay3_OffHour);
   Serial.print(":");
   Serial.println(valveRelay3_OffMin);
@@ -151,20 +156,20 @@ void loop()
   // Valve Relay 1 timer control
   //------------------------------------------------------------------------------------
   
-  // turn Valve Relay 1 ON
+  // check valve status and timer to turn Valve Relay 1 ON
   if (valve_1_state == 0)
   {
-    if (myRTC.hours == valveRelay1_OnHour && myRTC.minutes == valveRelay1_OnMin)
+    if (myRTC.hours == valveRelay1_OnHour && myRTC.minutes == valveRelay1_OnMin && myRTC.seconds <= ((waitTimePumpOn + waitTimeValveOff + MinTimePumpOperation) / 1000))
     {
-    digitalWrite(valveRelay1, HIGH);
-    valve_1_state = 1;
-    Serial.println("*** Valve Relay 1 turned ON ***");
-    Serial.print("Activation RTC time: ");
+    Serial.print("Valve Relay 1 Activation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
-    Serial.println(myRTC.seconds);  // display the seconds from RTC module  
+    Serial.println(myRTC.seconds);  // display the seconds from RTC module
+    digitalWrite(valveRelay1, HIGH);
+    valve_1_state = 1;
+    Serial.println("*** Valve Relay 1 turned ON ***");
     // wait then turn pump relay ON
     Serial.print("Waiting ");
     Serial.print(waitTimePumpOn / 1000);
@@ -176,20 +181,20 @@ void loop()
     }
   }
   
-  // turn Valve Relay 1 OFF
+  // check valve status and timer to turn Valve Relay 1 OFF
   if (valve_1_state == 1)
   {
     if (myRTC.hours == valveRelay1_OffHour && myRTC.minutes == valveRelay1_OffMin)
     {
-    digitalWrite(pumpRelay, LOW);
-    pump_state = 0;
-    Serial.println("*** Pump Relay turned OFF ***");
-    Serial.print("Deactivation RTC time: ");
+    Serial.print("Valve Relay 1 Deactivation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
+    digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
+    Serial.println("*** Pump Relay turned OFF ***");
     // wait then turn valve relay 1 OFF
     Serial.print("Waiting ");
     Serial.print(waitTimeValveOff / 1000);
@@ -205,20 +210,20 @@ void loop()
   // Valve Relay 2 timer control
   //------------------------------------------------------------------------------------
   
-  // turn Valve Relay 2 ON
+  // check valve status and timer to turn Valve Relay 2 ON
   if (valve_2_state == 0)
   {
-    if (myRTC.hours == valveRelay2_OnHour && myRTC.minutes == valveRelay2_OnMin)
+    if (myRTC.hours == valveRelay2_OnHour && myRTC.minutes == valveRelay2_OnMin && myRTC.seconds <= ((waitTimePumpOn + waitTimeValveOff + MinTimePumpOperation) / 1000))
     {
-    digitalWrite(valveRelay2, HIGH);
-    valve_2_state = 1;
-    Serial.println("*** Valve Relay 2 turned ON ***");
-    Serial.print("Activation RTC time: ");
+    Serial.print("Valve Relay 2 Activation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
+    digitalWrite(valveRelay2, HIGH);
+    valve_2_state = 1;
+    Serial.println("*** Valve Relay 2 turned ON ***");
     // wait then turn pump relay ON
     Serial.print("Waiting ");
     Serial.print(waitTimePumpOn / 1000);
@@ -230,20 +235,20 @@ void loop()
     }
   }
   
-  // turn Valve Relay 2 OFF
+  // check valve status and timer to turn Valve Relay 2 OFF
   if (valve_2_state == 1)
   {
     if (myRTC.hours == valveRelay2_OffHour && myRTC.minutes == valveRelay2_OffMin)
     {
-    digitalWrite(pumpRelay, LOW);
-    pump_state = 0;
-    Serial.println("*** Pump Relay turned OFF ***");
-    Serial.print("Deactivation RTC time: ");
+    Serial.print("Valve Relay 2 Deactivation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
+    digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
+    Serial.println("*** Pump Relay turned OFF ***");
     // wait then turn valve relay 2 OFF
     Serial.print("Waiting ");
     Serial.print(waitTimeValveOff / 1000);
@@ -259,20 +264,20 @@ void loop()
   // Valve Relay 3 timer control
   //------------------------------------------------------------------------------------
   
-  // turn Valve Relay 3 ON
+  // check valve status and timer to turn Valve Relay 3 ON
   if (valve_3_state == 0)
   {
-    if (myRTC.hours == valveRelay3_OnHour && myRTC.minutes == valveRelay3_OnMin)
+    if (myRTC.hours == valveRelay3_OnHour && myRTC.minutes == valveRelay3_OnMin && myRTC.seconds <= ((waitTimePumpOn + waitTimeValveOff + MinTimePumpOperation) / 1000))
     {
-    digitalWrite(valveRelay3, HIGH);
-    valve_3_state = 1;
-    Serial.println("*** Valve Relay 3 turned ON ***");
-    Serial.print("Activation RTC time: ");
+    Serial.print("Valve Relay 3 Activation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
-    Serial.println(myRTC.seconds);  // display the seconds from RTC module  
+    Serial.println(myRTC.seconds);  // display the seconds from RTC module 
+    digitalWrite(valveRelay3, HIGH);
+    valve_3_state = 1;
+    Serial.println("*** Valve Relay 3 turned ON ***"); 
     // wait then turn pump relay ON
     Serial.print("Waiting ");
     Serial.print(waitTimePumpOn / 1000);
@@ -284,21 +289,21 @@ void loop()
     }
   }
   
-  // turn Valve Relay 3 OFF
+  // check valve status and timer to turn Valve Relay 3 OFF
   if (valve_3_state == 1)
   {
     if (myRTC.hours == valveRelay3_OffHour && myRTC.minutes == valveRelay3_OffMin)
     {
-    digitalWrite(pumpRelay, LOW);
-    pump_state = 0;
-    Serial.println("*** Pump Relay turned OFF ***");
-    Serial.print("Deactivation RTC time: ");
+    Serial.print("Valve Relay 3 Deactivation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
     Serial.print(":");                                                                                      
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait then turn valve relay 1 OFF
+    digitalWrite(pumpRelay, LOW);
+    pump_state = 0;
+    Serial.println("*** Pump Relay turned OFF ***");
+    // wait then turn valve relay 3 OFF
     Serial.print("Waiting ");
     Serial.print(waitTimeValveOff / 1000);
     Serial.println("s before deactivating Valve Relay 3.");
@@ -339,7 +344,9 @@ void loop()
       if (valve_1_state == 1)
       {
         // wait then turn valve relay 1 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 1.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay1, LOW);
         valve_1_state = 0;
@@ -348,7 +355,9 @@ void loop()
       if (valve_2_state == 1)
       {
         // wait then turn valve relay 2 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 2.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay2, LOW);
         valve_2_state = 0;
@@ -357,7 +366,9 @@ void loop()
       if (valve_3_state == 1)
       {
         // wait then turn valve relay 3 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 3.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay3, LOW);
         valve_3_state = 0;
@@ -387,7 +398,9 @@ void loop()
       if (valve_1_state == 1)
       {
         // wait then turn valve relay 1 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 1.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay1, LOW);
         valve_1_state = 0;
@@ -396,7 +409,9 @@ void loop()
       if (valve_2_state == 1)
       {
         // wait then turn valve relay 2 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 2.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay2, LOW);
         valve_2_state = 0;
@@ -405,7 +420,9 @@ void loop()
       if (valve_3_state == 1)
       {
         // wait then turn valve relay 3 OFF
-        Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+        Serial.print("Waiting ");
+        Serial.print(waitTimeValveOff / 1000);
+        Serial.println("s before deactivating Valve Relay 3.");
         delay(waitTimeValveOff);
         digitalWrite(valveRelay3, LOW);
         valve_3_state = 0;
