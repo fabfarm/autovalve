@@ -8,13 +8,15 @@
 // Creation of the Real Time Clock Object
 virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
+//***************************************************************************************************
+// User Configuration:
 //---------------------------------------------------------------------------------------------------
 // Set ON and OFF times for valve relays
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
-const int valveRelay1_OnHour = 21;
+const int valveRelay1_OnHour = 14;
 const int valveRelay1_OnMin = 44;
-const int valveRelay1_OffHour = 21;
+const int valveRelay1_OffHour = 14;
 const int valveRelay1_OffMin = 46;
 
 // Timers - cypress
@@ -32,9 +34,16 @@ const int valveRelay3_OffMin = 20;
 //---------------------------------------------------------------------------------------------------
 // Set lower and upper current limits for pump relay
 //---------------------------------------------------------------------------------------------------
-float LowCurrentLimit = 0.2; // set the minimum current threshold in Amps
-float HighCurrentLimit = 1.1; // set the maximum current threshold in Amps
+float LowCurrentLimit = 0.4; // set the minimum current threshold in Amps
+float HighCurrentLimit = 0.7; // set the maximum current threshold in Amps
+
 //---------------------------------------------------------------------------------------------------
+// Set wait times for pump and valve relay activation/deactivation
+//---------------------------------------------------------------------------------------------------
+unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
+unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
+
+//***************************************************************************************************
 
 float AC_current; // AC current Irms value
 int count = 0; // initialise current limit count to zero
@@ -56,15 +65,12 @@ float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 unsigned long RTCtimeInterval = 3000;  // prints RTC time every time interval
 unsigned long RTCtimeNow;
 
-unsigned long waitTimePumpOn = 40000; // wait 40s to activate pump
-unsigned long waitTimeValveOff = 20000; // wait 20s to deactivate relay
-
 bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF
 bool valve_3_state = 0; // valve 3 state initialised to OFF
 bool pump_state = 0; // pump state initialised to OFF
-bool LowCurrentLimit_state = 0; // initialise low current limit state to 0 (normal)
-bool HighCurrentLimit_state = 0; // initialise high current limit state to 0 (normal)
+bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
+bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
 
 void setup() {
   pinMode(valveRelay1, OUTPUT);
@@ -115,7 +121,7 @@ void setup() {
   Serial.print("High Current Limit: ");
   Serial.print(HighCurrentLimit);
   Serial.println(" Amps");
-  Serial.println("********************************************************");
+  Serial.println("========================================================");
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
@@ -159,8 +165,10 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
-    // wait 40s then turn pump relay ON
-    Serial.println("Waiting 40s before activating Pump Relay.");
+    // wait then turn pump relay ON
+    Serial.print("Waiting ");
+    Serial.print(waitTimePumpOn / 1000);
+    Serial.println("s before activating Pump Relay.");
     delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
@@ -183,7 +191,9 @@ void loop()
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
     // wait then turn valve relay 1 OFF
-    Serial.println("Waiting 20s before deactivating Valve Relay 1.");
+    Serial.print("Waiting ");
+    Serial.print(waitTimeValveOff / 1000);
+    Serial.println("s before deactivating Valve Relay 1.");
     delay(waitTimeValveOff);
     digitalWrite(valveRelay1, LOW);
     valve_1_state = 0;
@@ -209,8 +219,10 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
-    // wait 40s then turn pump relay ON
-    Serial.println("Waiting 40s before activating Pump Relay.");
+    // wait then turn pump relay ON
+    Serial.print("Waiting ");
+    Serial.print(waitTimePumpOn / 1000);
+    Serial.println("s before activating Pump Relay.");
     delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
@@ -233,7 +245,9 @@ void loop()
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
     // wait then turn valve relay 2 OFF
-    Serial.println("Waiting 20s before deactivating Valve Relay 2.");
+    Serial.print("Waiting ");
+    Serial.print(waitTimeValveOff / 1000);
+    Serial.println("s before deactivating Valve Relay 2.");
     delay(waitTimeValveOff);
     digitalWrite(valveRelay2, LOW);
     valve_2_state = 0;
@@ -259,8 +273,10 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module  
-    // wait 40s then turn pump relay ON
-    Serial.println("Waiting 40s before activating Pump Relay.");
+    // wait then turn pump relay ON
+    Serial.print("Waiting ");
+    Serial.print(waitTimePumpOn / 1000);
+    Serial.println("s before activating Pump Relay.");
     delay(waitTimePumpOn);
     digitalWrite(pumpRelay, HIGH);
     pump_state = 1;
@@ -282,15 +298,17 @@ void loop()
     Serial.print(myRTC.minutes);  // display the current minutes from RTC module            
     Serial.print(":");                                                                                           
     Serial.println(myRTC.seconds);  // display the seconds from RTC module
-    // wait then turn valve relay 3 OFF
-    Serial.println("Waiting 20s before deactivating Valve Relay 3.");
+    // wait then turn valve relay 1 OFF
+    Serial.print("Waiting ");
+    Serial.print(waitTimeValveOff / 1000);
+    Serial.println("s before deactivating Valve Relay 3.");
     delay(waitTimeValveOff);
     digitalWrite(valveRelay3, LOW);
     valve_3_state = 0;
     Serial.println("*** Valve Relay 3 turned OFF ***");
     }
   }
-
+  
   //------------------------------------------------------------------------------------
   // Current threshold monitor
   //------------------------------------------------------------------------------------
