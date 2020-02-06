@@ -32,20 +32,20 @@ const int valveRelay3_OffHour = 17;
 const int valveRelay3_OffMin = 20;
 
 //---------------------------------------------------------------------------------------------------
-// Set lower and upper current limits for pump relay
+// Set lower and upper current limits for pump
 //---------------------------------------------------------------------------------------------------
 float LowCurrentLimit = 0.4; // set the minimum current threshold in Amps
 float HighCurrentLimit = 0.7; // set the maximum current threshold in Amps
 
 //---------------------------------------------------------------------------------------------------
-// Set wait times for pump and valve relay activation/deactivation
+// Set wait times for pump and valve relays activation/deactivation
 //---------------------------------------------------------------------------------------------------
 unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
 unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
 
 //***************************************************************************************************
 
-/////////////////// Pins and current sensor configuration ////////////////////
+/////////////////// GPIO pins and current sensor sensitivity ////////////////////
 
 // pump and relay pins
 const int pumpRelay = 8;
@@ -54,16 +54,16 @@ const int valveRelay2 = 10;
 const int valveRelay3 = 11;
 
 // ACS712 current sensor
-const int ACS712_sensor = A0; // set the analog pin connected to the ACS712 current sensor
+const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
-// ACS712 scale factor: 185 for 5A module, 100 for 20A module and 66 for 30A module
+// ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
 
 /////////////////// Do Not Change Below This Line ////////////////////
 
 float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 // voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
-float AC_current; // AC current Irms value
+float AC_current; // AC current Irms value (Amps)
 int count = 0; // initialise current limit count to zero
 unsigned long MinTimePumpOperation = 8000; // minimum time (ms) for pump operation (due to immediate low or high current) is greater than 8s.
 
