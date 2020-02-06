@@ -56,9 +56,6 @@ float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 unsigned long RTCtimeInterval = 3000;  // prints RTC time every time interval
 unsigned long RTCtimeNow;
 
-unsigned long pumpTimeNow;
-unsigned long valveTimeNow;
-
 unsigned long waitTimePumpOn = 40000; // wait 40s to activate pump
 unsigned long waitTimeValveOff = 20000; // wait 20s to deactivate relay
 
@@ -66,8 +63,8 @@ bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF
 bool valve_3_state = 0; // valve 3 state initialised to OFF
 bool pump_state = 0; // pump state initialised to OFF
-bool LowCurrentLimit_state = 0;
-bool HighCurrentLimit_state = 0;
+bool LowCurrentLimit_state = 0; // initialise low current limit state to 0 (normal)
+bool HighCurrentLimit_state = 0; // initialise high current limit state to 0 (normal)
 
 void setup() {
   pinMode(valveRelay1, OUTPUT);
@@ -301,7 +298,7 @@ void loop()
   if (pump_state == 1) // if pump is on, start monitoring current level
   {
     //Serial.println("*** Monitoring current threshold level ***");
-    AC_current = getIRMS(); // current sensor value is returned about every 3s
+    AC_current = getIRMS(); // read current sensor value, returned about every 3s
   
   // check low current threshold
   if (AC_current <= LowCurrentLimit)
