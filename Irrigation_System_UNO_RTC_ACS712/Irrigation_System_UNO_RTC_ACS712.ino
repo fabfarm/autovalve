@@ -15,9 +15,9 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 //---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 const int valveRelay1_OnHour = 16;
-const int valveRelay1_OnMin = 16;
+const int valveRelay1_OnMin = 28;
 const int valveRelay1_OffHour = 16;
-const int valveRelay1_OffMin = 19;
+const int valveRelay1_OffMin = 30;
 
 // Timers - cypress
 const int valveRelay2_OnHour = 21;
@@ -482,15 +482,16 @@ float getIRMS()  // continously sampling and logging max and min values
   while ((millis() - start_time) < 3000) // sample for 3000 ms or 3 secs
   {
     readValue = analogRead(ACS712_sensor);
-    // check if a new maxValue
+    // check if a new maximum value
     if (readValue > maxValue)
     {
-      // record the maximum sensor value
+      // record the new maximum value
       maxValue = readValue;
     }
+    // check if a new minimum value
     if (readValue < minValue)
     {
-      // record the minimum sensor value
+      // record the new minimum value
       minValue = readValue;
     }
   }
