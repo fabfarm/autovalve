@@ -6,7 +6,7 @@ const int sensorPin = A0; // connected to ADC pin of ESP-01
 
 #define NUMBER_OF_SAMPLES 5000  // maximum number of samples taken
 long samples[NUMBER_OF_SAMPLES]; // declare maximum size of array
-int numberOfSamples = 200; // number of samples taken in a single shoot
+int numberOfSamples = 200; // number of samples taken in a single shot
 unsigned long samplingTime;  // a variable value that stores the time in us to collect the numberOfSamples
 int samplingPause = 3; // time in ms to pause between continuous sampling
 
@@ -34,7 +34,7 @@ void analogSample(void)
   //else, proceed to sampling
   if (millis() - samplingPause < millisLastSample)
   {
-    return; // could this be the culprit??
+    return;
   }
   // start sampling
   //samplingTime = micros();
@@ -57,7 +57,7 @@ void analogSample(void)
   //samplingTime = micros() - samplingTime; // not needed but good to know.
   // end of sampling
   
-  millisLastSample = millis(); // works together to set the sampling pause time
+  millisLastSample = millis(); // set the sampling pause time
 }
 /*
 void showResults(void)
@@ -131,8 +131,9 @@ void setup()
 
 void loop() 
 {
-  // 1000 loops, each taking 200 continuous analog readings, then pausing for 3ms before taking another sample.
-  // time taken is a bit more than 3ms x 1000 = 3000ms.
+  // take 1000 samples at a time.
+  // 1 sample is: 200 analog readings in one shot, then pause for 3ms.
+  // time taken for 1000 samples is a bit more than 3ms x 1000 = 3000ms.
   for (int j = 0; j < 1000; j++)
   {
     analogSample();
