@@ -19,6 +19,8 @@ const char* PARAM_INT2 = "valveRelay1_OnMin";
 const char* PARAM_INT3 = "valveRelay1_OffHour";
 const char* PARAM_INT4 = "valveRelay1_OffMin";
 
+const char* PARAM_FLOAT1 = "LowCurrentLimit";
+const char* PARAM_FLOAT2 = "HighCurrentLimit";
 
 
 
@@ -50,6 +52,15 @@ const char index_html[] PROGMEM = R"rawliteral(
   </form><br>
   <form action="/get" target="hidden-form">
     valveRelay1_OffMin (current value: %valveRelay1_OffMin%): <input type="number " name="valveRelay1_OffMin">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <p><b>Set Current Limits:</b></p>
+  <form action="/get" target="hidden-form">
+    LowCurrentLimit (current value: %LowCurrentLimit%): <input type="number " name="LowCurrentLimit">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    HighCurrentLimit (current value: %HighCurrentLimit%): <input type="number " name="HighCurrentLimit">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   <iframe style="display:none" name="hidden-form"></iframe>
@@ -104,6 +115,12 @@ String processor(const String& var){
   else if(var == "valveRelay1_OffMin"){
     return readFile(SPIFFS, "/valveRelay1_OffMin.txt");
   }
+  else if(var == "LowCurrentLimit"){
+    return readFile(SPIFFS, "/LowCurrentLimit.txt");
+  }
+  else if(var == "HighCurrentLimit"){
+    return readFile(SPIFFS, "/HighCurrentLimit.txt");
+  }
   return String();
 }
 
@@ -114,11 +131,7 @@ String processor(const String& var){
 //virtuabotixRTC myRTC(5, 6, 7);  // For UNO. Wiring of the RTC (CLK,DAT,RST)
 virtuabotixRTC myRTC(5, 4, 2);  // For ESP8266. Wiring of the RTC (CLK,DAT,RST)
 
-//***************************************************************************************************
-// User Configuration:
-//---------------------------------------------------------------------------------------------------
 // Set ON and OFF times for valve relays
-//---------------------------------------------------------------------------------------------------
 // Timers - fruit trees
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
@@ -137,21 +150,13 @@ int valveRelay3_OnMin = 0;
 int valveRelay3_OffHour = 0;
 int valveRelay3_OffMin = 0;
 
-//---------------------------------------------------------------------------------------------------
 // Set lower and upper current limits for pump
-//---------------------------------------------------------------------------------------------------
 float LowCurrentLimit = 0; // set the minimum current threshold in Amps
 float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 
-//---------------------------------------------------------------------------------------------------
 // Set wait times for pump and valve relays activation/deactivation
-//---------------------------------------------------------------------------------------------------
 unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
 unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
-
-//***************************************************************************************************
-
-/////////////////// GPIO pins and current sensor sensitivity ////////////////////
 
 // pump and relay pins
 const int pumpRelay = 14;
@@ -163,8 +168,6 @@ const int valveRelay3 = 15;
 const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
-
-/////////////////// Do Not Change Below This Line ////////////////////
 
 float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 // voltage offset at analog input with reference to ground when no signal applied to the sensor.
@@ -234,6 +237,16 @@ void setup() {
       inputMessage = request->getParam(PARAM_INT4)->value();
       writeFile(SPIFFS, "/valveRelay1_OffMin.txt", inputMessage.c_str());
     }
+    // GET LowCurrentLimit value on <ESP_IP>/get?LowCurrentLimit=<inputMessage>
+    else if (request->hasParam(PARAM_FLOAT1)) {
+      inputMessage = request->getParam(PARAM_FLOAT1)->value();
+      writeFile(SPIFFS, "/LowCurrentLimit.txt", inputMessage.c_str());
+    }
+    // GET HighCurrentLimit value on <ESP_IP>/get?HighCurrentLimit=<inputMessage>
+    else if (request->hasParam(PARAM_FLOAT2)) {
+      inputMessage = request->getParam(PARAM_FLOAT2)->value();
+      writeFile(SPIFFS, "/HighCurrentLimit.txt", inputMessage.c_str());
+    }
     else {
       inputMessage = "No message sent";
     }
@@ -256,43 +269,8 @@ void setup() {
   digitalWrite(pumpRelay, LOW);
   
   Serial.println();
-  Serial.println("Automated irrigation system with RTC and Current Sensor");
-  Serial.println("********************************************************");
-//  Serial.println("User Configuration:");
-//  Serial.println("========================================================");
-//  Serial.println("RTC-based Valve Relay Timers (Hours:Minutes)");
-//  Serial.print("Valve Relay 1 ON: ");
-//  Serial.print(valveRelay1_OnHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay1_OnMin);
-//  Serial.print("Valve Relay 1 OFF: ");
-//  Serial.print(valveRelay1_OffHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay1_OffMin);
-//  Serial.print("Valve Relay 2 ON: ");
-//  Serial.print(valveRelay2_OnHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay2_OnMin);
-//  Serial.print("Valve Relay 2 OFF: ");
-//  Serial.print(valveRelay2_OffHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay2_OffMin);
-//  Serial.print("Valve Relay 3 ON: ");
-//  Serial.print(valveRelay3_OnHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay3_OnMin);
-//  Serial.print("Valve Relay 3 OFF: ");
-//  Serial.print(valveRelay3_OffHour);
-//  Serial.print(":");
-//  Serial.println(valveRelay3_OffMin);
-//  Serial.println("--------------------------------------------------------");
-//  Serial.print("Low Current Limit: ");
-//  Serial.print(LowCurrentLimit);
-//  Serial.println(" Amps");
-//  Serial.print("High Current Limit: ");
-//  Serial.print(HighCurrentLimit);
-//  Serial.println(" Amps");
-//  Serial.println("========================================================");
+  Serial.println("NodeMCU Irrigation Control System");
+  Serial.println("**********************************");
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
@@ -312,8 +290,6 @@ void setup() {
   Serial.print(myRTC.minutes);                                                                            
   Serial.print(":");                                                                                      
   Serial.println(myRTC.seconds);
-
-
 }
 
 void loop() {
@@ -327,11 +303,13 @@ void loop() {
   valveRelay1_OffHour = readFile(SPIFFS, "/valveRelay1_OffHour.txt").toInt();
   valveRelay1_OffMin = readFile(SPIFFS, "/valveRelay1_OffMin.txt").toInt();
   
+  LowCurrentLimit = readFile(SPIFFS, "/LowCurrentLimit.txt").toFloat();
+  HighCurrentLimit = readFile(SPIFFS, "/HighCurrentLimit.txt").toFloat();
   
   Serial.println("********************************************************");
   Serial.println("Current User Configuration:");
   Serial.println("--------------------------------------------------------");
-  Serial.println("RTC-based Valve Relay Timers (Hours:Minutes)");
+  Serial.println("RTC-based Timers (Hours:Minutes)");
   Serial.print("Valve Relay 1 ON: ");
   Serial.print(valveRelay1_OnHour);
   Serial.print(":");
