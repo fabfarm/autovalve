@@ -24,7 +24,7 @@ const char* PARAM_FLOAT2 = "HighCurrentLimit";
 
 
 
-// HTML web page to handle 2 input fields (valveRelay1_OnHour, valveRelay1_OnMin)
+// HTML web page to handle input fields
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>
   <title>NodeMCU v1.0 12-E Input Form</title>
@@ -129,9 +129,10 @@ String processor(const String& var){
 
 // Creation of the Real Time Clock Object
 //virtuabotixRTC myRTC(5, 6, 7);  // For UNO. Wiring of the RTC (CLK,DAT,RST)
-virtuabotixRTC myRTC(5, 4, 2);  // For ESP8266. Wiring of the RTC (CLK,DAT,RST)
+virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the RTC (CLK,DAT,RST)
 
-// Set ON and OFF times for valve relays
+// ON and OFF times for valve relays
+// Declaring variables and initialising to zero
 // Timers - fruit trees
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
@@ -158,11 +159,11 @@ float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
 unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
 
-// pump and relay pins
-const int pumpRelay = 14;
-const int valveRelay1 = 12;
-const int valveRelay2 = 13;
-const int valveRelay3 = 15;
+// NodeMCU ESP8266 pump and relay pins 
+const int pumpRelay = 14; // D5
+const int valveRelay1 = 12; // D6
+const int valveRelay2 = 13; // D7
+const int valveRelay3 = 15; // D8
 
 // ACS712 current sensor
 const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
@@ -198,7 +199,7 @@ void setup() {
       Serial.println("An Error has occurred while mounting SPIFFS");
       return;
     }
-
+  
   Serial.println();
   Serial.println("Setting AP (Access Point)…");
   // Remove the password parameter, if you want the AP (Access Point) to be open
