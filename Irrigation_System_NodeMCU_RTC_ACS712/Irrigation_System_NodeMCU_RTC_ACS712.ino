@@ -51,65 +51,65 @@ const char index_html[] PROGMEM = R"rawliteral(
   
   <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnHour (saved value: %valveRelay1_OnHour%): <input type="number " name="valveRelay1_OnHour">
+    valveRelay1_OnHour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnMin (saved value: %valveRelay1_OnMin%): <input type="number " name="valveRelay1_OnMin">
+    valveRelay1_OnMin (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffHour (saved value: %valveRelay1_OffHour%): <input type="number " name="valveRelay1_OffHour">
+    valveRelay1_OffHour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffMin (saved value: %valveRelay1_OffMin%): <input type="number " name="valveRelay1_OffMin">
+    valveRelay1_OffMin (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
 
   <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnHour (saved value: %valveRelay2_OnHour%): <input type="number " name="valveRelay2_OnHour">
+    valveRelay2_OnHour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnMin (saved value: %valveRelay2_OnMin%): <input type="number " name="valveRelay2_OnMin">
+    valveRelay2_OnMin (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffHour (saved value: %valveRelay2_OffHour%): <input type="number " name="valveRelay2_OffHour">
+    valveRelay2_OffHour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffMin (saved value: %valveRelay2_OffMin%): <input type="number " name="valveRelay2_OffMin">
+    valveRelay2_OffMin (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
 
   <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnHour (saved value: %valveRelay3_OnHour%): <input type="number " name="valveRelay3_OnHour">
+    valveRelay3_OnHour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnMin (saved value: %valveRelay3_OnMin%): <input type="number " name="valveRelay3_OnMin">
+    valveRelay3_OnMin (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffHour (saved value: %valveRelay3_OffHour%): <input type="number " name="valveRelay3_OffHour">
+    valveRelay3_OffHour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffMin (saved value: %valveRelay3_OffMin%): <input type="number " name="valveRelay3_OffMin">
+    valveRelay3_OffMin (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   
   <p><b>Set Current Limits (Amps):</b></p>
   <form action="/get" target="hidden-form">
-    LowCurrentLimit (saved value: %LowCurrentLimit%): <input type="number " name="LowCurrentLimit">
+    LowCurrentLimit (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="6" size="6" min="0" max="99" step="0.001">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    HighCurrentLimit (saved value: %HighCurrentLimit%): <input type="number " name="HighCurrentLimit">
+    HighCurrentLimit (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="6" size="6" min="0" max="99" step="0.001">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   <iframe style="display:none" name="hidden-form"></iframe>
@@ -462,10 +462,10 @@ void loop() {
   Serial.println(valveRelay3_OffMin);
   Serial.println("--------------------------------------------------------");
   Serial.print("Low Current Limit: ");
-  Serial.print(LowCurrentLimit);
+  Serial.print(LowCurrentLimit, 3);
   Serial.println(" Amps");
   Serial.print("High Current Limit: ");
-  Serial.print(HighCurrentLimit);
+  Serial.print(HighCurrentLimit, 3);
   Serial.println(" Amps");
   Serial.println("********************************************************");
   }
