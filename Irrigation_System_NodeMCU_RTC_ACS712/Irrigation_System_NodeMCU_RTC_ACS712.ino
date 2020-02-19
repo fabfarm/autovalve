@@ -6,9 +6,10 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
-#include <Hash.h>
-#include <FS.h>
-#include <ESPAsyncWebServer.h>
+#include <Hash.h> // Arduino Cryptography Library
+#include <ESPAsyncWebServer.h> // Async Web Server for ESP8266
+#include <FS.h> // SPIFFS library
+#include <virtuabotixRTC.h> // DS1302 RTC module library
 
 const char* ssid     = "NodeMCU-Irrigation-AP";
 const char* password = "iplantstuff";
@@ -48,67 +49,67 @@ const char index_html[] PROGMEM = R"rawliteral(
   <h1>Algarve Fab Farm</h1>
   <h3>Irrigation System Configuration</h3>
   
-  <p><b>Set Relay 1 Timer:</b></p>
+  <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnHour (current value: %valveRelay1_OnHour%): <input type="number " name="valveRelay1_OnHour">
+    valveRelay1_OnHour (saved value: %valveRelay1_OnHour%): <input type="number " name="valveRelay1_OnHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnMin (current value: %valveRelay1_OnMin%): <input type="number " name="valveRelay1_OnMin">
+    valveRelay1_OnMin (saved value: %valveRelay1_OnMin%): <input type="number " name="valveRelay1_OnMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffHour (current value: %valveRelay1_OffHour%): <input type="number " name="valveRelay1_OffHour">
+    valveRelay1_OffHour (saved value: %valveRelay1_OffHour%): <input type="number " name="valveRelay1_OffHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffMin (current value: %valveRelay1_OffMin%): <input type="number " name="valveRelay1_OffMin">
+    valveRelay1_OffMin (saved value: %valveRelay1_OffMin%): <input type="number " name="valveRelay1_OffMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
 
-  <p><b>Set Relay 2 Timer:</b></p>
+  <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnHour (current value: %valveRelay2_OnHour%): <input type="number " name="valveRelay2_OnHour">
+    valveRelay2_OnHour (saved value: %valveRelay2_OnHour%): <input type="number " name="valveRelay2_OnHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnMin (current value: %valveRelay2_OnMin%): <input type="number " name="valveRelay2_OnMin">
+    valveRelay2_OnMin (saved value: %valveRelay2_OnMin%): <input type="number " name="valveRelay2_OnMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffHour (current value: %valveRelay2_OffHour%): <input type="number " name="valveRelay2_OffHour">
+    valveRelay2_OffHour (saved value: %valveRelay2_OffHour%): <input type="number " name="valveRelay2_OffHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffMin (current value: %valveRelay2_OffMin%): <input type="number " name="valveRelay2_OffMin">
+    valveRelay2_OffMin (saved value: %valveRelay2_OffMin%): <input type="number " name="valveRelay2_OffMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
 
-  <p><b>Set Relay 3 Timer:</b></p>
+  <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnHour (current value: %valveRelay3_OnHour%): <input type="number " name="valveRelay3_OnHour">
+    valveRelay3_OnHour (saved value: %valveRelay3_OnHour%): <input type="number " name="valveRelay3_OnHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnMin (current value: %valveRelay3_OnMin%): <input type="number " name="valveRelay3_OnMin">
+    valveRelay3_OnMin (saved value: %valveRelay3_OnMin%): <input type="number " name="valveRelay3_OnMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffHour (current value: %valveRelay3_OffHour%): <input type="number " name="valveRelay3_OffHour">
+    valveRelay3_OffHour (saved value: %valveRelay3_OffHour%): <input type="number " name="valveRelay3_OffHour">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffMin (current value: %valveRelay3_OffMin%): <input type="number " name="valveRelay3_OffMin">
+    valveRelay3_OffMin (saved value: %valveRelay3_OffMin%): <input type="number " name="valveRelay3_OffMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   
-  <p><b>Set Current Limits:</b></p>
+  <p><b>Set Current Limits (Amps):</b></p>
   <form action="/get" target="hidden-form">
-    LowCurrentLimit (current value: %LowCurrentLimit%): <input type="number " name="LowCurrentLimit">
+    LowCurrentLimit (saved value: %LowCurrentLimit%): <input type="number " name="LowCurrentLimit">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    HighCurrentLimit (current value: %HighCurrentLimit%): <input type="number " name="HighCurrentLimit">
+    HighCurrentLimit (saved value: %HighCurrentLimit%): <input type="number " name="HighCurrentLimit">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   <iframe style="display:none" name="hidden-form"></iframe>
@@ -148,7 +149,7 @@ void writeFile(fs::FS &fs, const char * path, const char * message){
   }
 }
 
-// Replaces placeholder with stored values
+// Replaces placeholder with saved values
 String processor(const String& var){
   //Serial.println(var);
   if(var == "valveRelay1_OnHour"){
@@ -163,6 +164,7 @@ String processor(const String& var){
   else if(var == "valveRelay1_OffMin"){
     return readFile(SPIFFS, "/valveRelay1_OffMin.txt");
   }
+  
   else if(var == "valveRelay2_OnHour"){
     return readFile(SPIFFS, "/valveRelay2_OnHour.txt");
   }
@@ -175,6 +177,7 @@ String processor(const String& var){
   else if(var == "valveRelay2_OffMin"){
     return readFile(SPIFFS, "/valveRelay2_OffMin.txt");
   }
+  
   else if(var == "valveRelay3_OnHour"){
     return readFile(SPIFFS, "/valveRelay3_OnHour.txt");
   }
@@ -187,6 +190,7 @@ String processor(const String& var){
   else if(var == "valveRelay3_OffMin"){
     return readFile(SPIFFS, "/valveRelay3_OffMin.txt");
   }
+  
   else if(var == "LowCurrentLimit"){
     return readFile(SPIFFS, "/LowCurrentLimit.txt");
   }
@@ -197,10 +201,7 @@ String processor(const String& var){
 }
 
 
-#include <virtuabotixRTC.h> // DS1302 RTC module library
-
 // Creation of the Real Time Clock Object
-//virtuabotixRTC myRTC(5, 6, 7);  // For UNO. Wiring of the RTC (CLK,DAT,RST)
 virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the RTC (CLK,DAT,RST)
 
 // Declaring variables for valve relays and initialising to zero
@@ -251,8 +252,8 @@ unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation 
 unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
 unsigned long RTCtimeNow;
 
-unsigned long period = 10000;
-unsigned long time_now = 0;
+unsigned long configTimeInterval = 10000; // set interval in ms
+unsigned long configTimeNow = 0; // stores current value from millis()
 
 bool valve_1_state = 0; // valve 1 state initialised to OFF
 bool valve_2_state = 0; // valve 2 state initialised to OFF
@@ -409,10 +410,10 @@ void setup() {
 
 void loop() {
 
-  if (millis() - time_now >= period)  // non-blocking
+  if (millis() - configTimeNow >= configTimeInterval)  // non-blocking
   {
-  time_now = millis();
-  // Read stored values on NodeMCU SPIFFS
+  configTimeNow = millis();
+  // Read saved values on NodeMCU SPIFFS
   valveRelay1_OnHour = readFile(SPIFFS, "/valveRelay1_OnHour.txt").toInt();
   valveRelay1_OnMin = readFile(SPIFFS, "/valveRelay1_OnMin.txt").toInt();
   valveRelay1_OffHour = readFile(SPIFFS, "/valveRelay1_OffHour.txt").toInt();
