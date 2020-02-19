@@ -1,6 +1,7 @@
 // Irrigation control system
 // Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
-// version 1.2
+// version 1.3
+// control 4 relays, set timers for 3 relays with current sensing.
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -19,9 +20,18 @@ const char* PARAM_INT2 = "valveRelay1_OnMin";
 const char* PARAM_INT3 = "valveRelay1_OffHour";
 const char* PARAM_INT4 = "valveRelay1_OffMin";
 
+const char* PARAM_INT5 = "valveRelay2_OnHour";
+const char* PARAM_INT6 = "valveRelay2_OnMin";
+const char* PARAM_INT7 = "valveRelay2_OffHour";
+const char* PARAM_INT8 = "valveRelay2_OffMin";
+
+const char* PARAM_INT9 = "valveRelay3_OnHour";
+const char* PARAM_INT10 = "valveRelay3_OnMin";
+const char* PARAM_INT11 = "valveRelay3_OffHour";
+const char* PARAM_INT12 = "valveRelay3_OffMin";
+
 const char* PARAM_FLOAT1 = "LowCurrentLimit";
 const char* PARAM_FLOAT2 = "HighCurrentLimit";
-
 
 
 // HTML web page to handle input fields
@@ -31,12 +41,13 @@ const char index_html[] PROGMEM = R"rawliteral(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
     function submitMessage() {
-      alert("Saved value to ESP SPIFFS");
+      alert("Saved value to NodeMCU SPIFFS");
       setTimeout(function(){ document.location.reload(false); }, 500);   
     }
   </script></head><body>
   <h1>Algarve Fab Farm</h1>
   <h3>Irrigation System Configuration</h3>
+  
   <p><b>Set Relay 1 Timer:</b></p>
   <form action="/get" target="hidden-form">
     valveRelay1_OnHour (current value: %valveRelay1_OnHour%): <input type="number " name="valveRelay1_OnHour">
@@ -53,7 +64,44 @@ const char index_html[] PROGMEM = R"rawliteral(
   <form action="/get" target="hidden-form">
     valveRelay1_OffMin (current value: %valveRelay1_OffMin%): <input type="number " name="valveRelay1_OffMin">
     <input type="submit" value="Submit" onclick="submitMessage()">
+  </form>
+
+  <p><b>Set Relay 2 Timer:</b></p>
+  <form action="/get" target="hidden-form">
+    valveRelay2_OnHour (current value: %valveRelay2_OnHour%): <input type="number " name="valveRelay2_OnHour">
+    <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay2_OnMin (current value: %valveRelay2_OnMin%): <input type="number " name="valveRelay2_OnMin">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay2_OffHour (current value: %valveRelay2_OffHour%): <input type="number " name="valveRelay2_OffHour">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay2_OffMin (current value: %valveRelay2_OffMin%): <input type="number " name="valveRelay2_OffMin">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form>
+
+  <p><b>Set Relay 3 Timer:</b></p>
+  <form action="/get" target="hidden-form">
+    valveRelay3_OnHour (current value: %valveRelay3_OnHour%): <input type="number " name="valveRelay3_OnHour">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay3_OnMin (current value: %valveRelay3_OnMin%): <input type="number " name="valveRelay3_OnMin">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay3_OffHour (current value: %valveRelay3_OffHour%): <input type="number " name="valveRelay3_OffHour">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form><br>
+  <form action="/get" target="hidden-form">
+    valveRelay3_OffMin (current value: %valveRelay3_OffMin%): <input type="number " name="valveRelay3_OffMin">
+    <input type="submit" value="Submit" onclick="submitMessage()">
+  </form>
+  
   <p><b>Set Current Limits:</b></p>
   <form action="/get" target="hidden-form">
     LowCurrentLimit (current value: %LowCurrentLimit%): <input type="number " name="LowCurrentLimit">
@@ -115,6 +163,30 @@ String processor(const String& var){
   else if(var == "valveRelay1_OffMin"){
     return readFile(SPIFFS, "/valveRelay1_OffMin.txt");
   }
+  else if(var == "valveRelay2_OnHour"){
+    return readFile(SPIFFS, "/valveRelay2_OnHour.txt");
+  }
+  else if(var == "valveRelay2_OnMin"){
+    return readFile(SPIFFS, "/valveRelay2_OnMin.txt");
+  }
+  else if(var == "valveRelay2_OffHour"){
+    return readFile(SPIFFS, "/valveRelay2_OffHour.txt");
+  }
+  else if(var == "valveRelay2_OffMin"){
+    return readFile(SPIFFS, "/valveRelay2_OffMin.txt");
+  }
+  else if(var == "valveRelay3_OnHour"){
+    return readFile(SPIFFS, "/valveRelay3_OnHour.txt");
+  }
+  else if(var == "valveRelay3_OnMin"){
+    return readFile(SPIFFS, "/valveRelay3_OnMin.txt");
+  }
+  else if(var == "valveRelay3_OffHour"){
+    return readFile(SPIFFS, "/valveRelay3_OffHour.txt");
+  }
+  else if(var == "valveRelay3_OffMin"){
+    return readFile(SPIFFS, "/valveRelay3_OffMin.txt");
+  }
   else if(var == "LowCurrentLimit"){
     return readFile(SPIFFS, "/LowCurrentLimit.txt");
   }
@@ -131,8 +203,7 @@ String processor(const String& var){
 //virtuabotixRTC myRTC(5, 6, 7);  // For UNO. Wiring of the RTC (CLK,DAT,RST)
 virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the RTC (CLK,DAT,RST)
 
-// ON and OFF times for valve relays
-// Declaring variables and initialising to zero
+// Declaring variables for valve relays and initialising to zero
 // Timers - fruit trees
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
@@ -151,7 +222,7 @@ int valveRelay3_OnMin = 0;
 int valveRelay3_OffHour = 0;
 int valveRelay3_OffMin = 0;
 
-// Set lower and upper current limits for pump
+// Declaring variables for lower and upper current limits for pump and initialising to zero
 float LowCurrentLimit = 0; // set the minimum current threshold in Amps
 float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 
@@ -159,7 +230,7 @@ float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
 unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
 
-// NodeMCU ESP8266 pump and relay pins 
+// NodeMCU ESP8266 pump and relay GPIO pins 
 const int pumpRelay = 14; // D5
 const int valveRelay1 = 12; // D6
 const int valveRelay2 = 13; // D7
@@ -238,6 +309,49 @@ void setup() {
       inputMessage = request->getParam(PARAM_INT4)->value();
       writeFile(SPIFFS, "/valveRelay1_OffMin.txt", inputMessage.c_str());
     }
+
+    // GET valveRelay2_OnHour value on <ESP_IP>/get?valveRelay2_OnHour=<inputMessage>
+    else if (request->hasParam(PARAM_INT5)) {
+      inputMessage = request->getParam(PARAM_INT5)->value();
+      writeFile(SPIFFS, "/valveRelay2_OnHour.txt", inputMessage.c_str());
+    }
+    // GET valveRelay2_OnMin value on <ESP_IP>/get?valveRelay2_OnMin=<inputMessage>
+    else if (request->hasParam(PARAM_INT6)) {
+      inputMessage = request->getParam(PARAM_INT6)->value();
+      writeFile(SPIFFS, "/valveRelay2_OnMin.txt", inputMessage.c_str());
+    }
+    // GET valveRelay2_OffHour value on <ESP_IP>/get?valveRelay2_OffHour=<inputMessage>
+    else if (request->hasParam(PARAM_INT7)) {
+      inputMessage = request->getParam(PARAM_INT7)->value();
+      writeFile(SPIFFS, "/valveRelay2_OffHour.txt", inputMessage.c_str());
+    }
+    // GET valveRelay2_OffMin value on <ESP_IP>/get?valveRelay2_OffMin=<inputMessage>
+    else if (request->hasParam(PARAM_INT8)) {
+      inputMessage = request->getParam(PARAM_INT8)->value();
+      writeFile(SPIFFS, "/valveRelay2_OffMin.txt", inputMessage.c_str());
+    }
+
+    // GET valveRelay3_OnHour value on <ESP_IP>/get?valveRelay3_OnHour=<inputMessage>
+    else if (request->hasParam(PARAM_INT9)) {
+      inputMessage = request->getParam(PARAM_INT9)->value();
+      writeFile(SPIFFS, "/valveRelay3_OnHour.txt", inputMessage.c_str());
+    }
+    // GET valveRelay3_OnMin value on <ESP_IP>/get?valveRelay3_OnMin=<inputMessage>
+    else if (request->hasParam(PARAM_INT10)) {
+      inputMessage = request->getParam(PARAM_INT10)->value();
+      writeFile(SPIFFS, "/valveRelay3_OnMin.txt", inputMessage.c_str());
+    }
+    // GET valveRelay3_OffHour value on <ESP_IP>/get?valveRelay3_OffHour=<inputMessage>
+    else if (request->hasParam(PARAM_INT11)) {
+      inputMessage = request->getParam(PARAM_INT11)->value();
+      writeFile(SPIFFS, "/valveRelay3_OffHour.txt", inputMessage.c_str());
+    }
+    // GET valveRelay3_OffMin value on <ESP_IP>/get?valveRelay3_OffMin=<inputMessage>
+    else if (request->hasParam(PARAM_INT12)) {
+      inputMessage = request->getParam(PARAM_INT12)->value();
+      writeFile(SPIFFS, "/valveRelay3_OffMin.txt", inputMessage.c_str());
+    }
+    
     // GET LowCurrentLimit value on <ESP_IP>/get?LowCurrentLimit=<inputMessage>
     else if (request->hasParam(PARAM_FLOAT1)) {
       inputMessage = request->getParam(PARAM_FLOAT1)->value();
@@ -297,12 +411,22 @@ void loop() {
 
   if (millis() - time_now >= period)  // non-blocking
   {
-    time_now = millis();
-    // To access stored values
+  time_now = millis();
+  // Read stored values on NodeMCU SPIFFS
   valveRelay1_OnHour = readFile(SPIFFS, "/valveRelay1_OnHour.txt").toInt();
   valveRelay1_OnMin = readFile(SPIFFS, "/valveRelay1_OnMin.txt").toInt();
   valveRelay1_OffHour = readFile(SPIFFS, "/valveRelay1_OffHour.txt").toInt();
   valveRelay1_OffMin = readFile(SPIFFS, "/valveRelay1_OffMin.txt").toInt();
+
+  valveRelay2_OnHour = readFile(SPIFFS, "/valveRelay2_OnHour.txt").toInt();
+  valveRelay2_OnMin = readFile(SPIFFS, "/valveRelay2_OnMin.txt").toInt();
+  valveRelay2_OffHour = readFile(SPIFFS, "/valveRelay2_OffHour.txt").toInt();
+  valveRelay2_OffMin = readFile(SPIFFS, "/valveRelay2_OffMin.txt").toInt();
+
+  valveRelay3_OnHour = readFile(SPIFFS, "/valveRelay3_OnHour.txt").toInt();
+  valveRelay3_OnMin = readFile(SPIFFS, "/valveRelay3_OnMin.txt").toInt();
+  valveRelay3_OffHour = readFile(SPIFFS, "/valveRelay3_OffHour.txt").toInt();
+  valveRelay3_OffMin = readFile(SPIFFS, "/valveRelay3_OffMin.txt").toInt();
   
   LowCurrentLimit = readFile(SPIFFS, "/LowCurrentLimit.txt").toFloat();
   HighCurrentLimit = readFile(SPIFFS, "/HighCurrentLimit.txt").toFloat();
