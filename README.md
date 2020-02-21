@@ -29,6 +29,8 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
 
 ![alt text](https://github.com/fabfarm/autovalve/blob/master/esp01adcpotentialdivider.png "ESP-01 ADC Voltage Divider")
 
-* ### Automated irrigation controller using Arduino UNO, DS1302 RTC module and ACS712 current sensor
+* ### Irrigation control system using Arduino UNO, DS1302 RTC module and ACS712 current sensor
   Arduino UNO with RTC module controls 4 relays. Timers set for 1 pump and 3 valves. Current sensor enables deactivation of pump if current limit reached.
 
+* ### Irrigation control system using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
+  Arduino UNO with RTC module controls 4 relays. Timers set for 1 pump and 3 valves. Current sensor enables deactivation of pump if current limit reached.
