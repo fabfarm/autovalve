@@ -1,6 +1,6 @@
 // Irrigation control system
 // Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
-// version 1.3
+// version 1.4
 // control 4 relays, set timers for 3 relays with current sensing.
 
 #include <Arduino.h>
@@ -51,55 +51,55 @@ const char index_html[] PROGMEM = R"rawliteral(
   
   <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnHour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
+    ON hour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OnMin (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
+    ON mins (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffHour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
+    OFF hour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay1_OffMin (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
+    OFF mins (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
-
+  
   <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnHour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
+    ON hour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OnMin (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
+    ON mins (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffHour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
+    OFF hour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay2_OffMin (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
+    OFF mins (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
 
   <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnHour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
+    ON hour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OnMin (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
+    ON mins (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffHour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
+    OFF hour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    valveRelay3_OffMin (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
+    OFF mins (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   
@@ -197,6 +197,10 @@ String processor(const String& var){
   else if(var == "HighCurrentLimit"){
     return readFile(SPIFFS, "/HighCurrentLimit.txt");
   }
+  // return the RTC time
+  else if(var == "RTChour"){
+    return readFile(SPIFFS, "/HighCurrentLimit.txt");
+  }
   return String();
 }
 
@@ -238,6 +242,7 @@ const int valveRelay2 = 13; // D7
 const int valveRelay3 = 15; // D8
 
 // ACS712 current sensor
+#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot
 const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
@@ -245,7 +250,7 @@ const int mVperAmp = 100; // Output sensitivity in mV per Amp
 float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
 // voltage offset at analog input with reference to ground when no signal applied to the sensor.
 
-float AC_current; // AC current Irms value (Amps)
+float AC_current; // measured AC current Irms value (Amps)
 int count = 0; // initialise current limit count to zero
 unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation (due to immediate low or high current)
 
@@ -789,33 +794,16 @@ void loop() {
 // Function to measure peak-to-peak voltage and calculate Irms value
 //------------------------------------------------------------------------------------ 
 
-float getIRMS()  // continously sampling and logging max and min values
-{
-  float VPP; // peak-to-peak voltage
-  float VRMS;  // RMS voltage
-  float IRMS; // RMS current
-  int readValue; // value from the sensor
-  int maxValue = 0; // to store max value, initialised at lowest value.
-  int minValue = 1024; // to store min value, initialised at highest value.
-
-
-    readValue = analogRead(ACS712_sensor);
-    // check if a new maximum value
-    if (readValue > maxValue)
-    {
-      // record the new maximum value
-      maxValue = readValue;
-    }
-    // check if a new minimum value
-    if (readValue < minValue)
-    {
-      // record the new minimum value
-      minValue = readValue;
-    }
-
-//  uint32_t start_time = millis();
-//  while ((millis() - start_time) < 3000) // sample for 3000 ms or 3 secs
-//  {
+//float getIRMS()  // continously sampling max and min values
+//{
+//  float VPP; // peak-to-peak voltage
+//  float VRMS;  // RMS voltage
+//  float IRMS; // RMS current
+//  int readValue; // value from the sensor
+//  int maxValue = 0; // to store max value, initialised at lowest value.
+//  int minValue = 1024; // to store min value, initialised at highest value.
+//
+//
 //    readValue = analogRead(ACS712_sensor);
 //    // check if a new maximum value
 //    if (readValue > maxValue)
@@ -829,8 +817,80 @@ float getIRMS()  // continously sampling and logging max and min values
 //      // record the new minimum value
 //      minValue = readValue;
 //    }
-//  }
+//
+////  uint32_t start_time = millis();
+////  while ((millis() - start_time) < 3000) // sample for 3000 ms or 3 secs
+////  {
+////    readValue = analogRead(ACS712_sensor);
+////    // check if a new maximum value
+////    if (readValue > maxValue)
+////    {
+////      // record the new maximum value
+////      maxValue = readValue;
+////    }
+////    // check if a new minimum value
+////    if (readValue < minValue)
+////    {
+////      // record the new minimum value
+////      minValue = readValue;
+////    }
+////  }
+//
+//  // subtract min from max and convert range to volts
+//  VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
+//  VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
+//  IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
+//
+//  Serial.print("Vpp/V: ");
+//  Serial.print(VPP, 3); // print to 3 decimal places
+//  Serial.print("\tVrms/V: ");
+//  Serial.print(VRMS, 3);  // print to 3 decimal places
+//  Serial.print("\tIrms/A: ");
+//  Serial.println(IRMS, 3);  // print to 3 decimal places
+//  
+//  return IRMS;
+//}
 
+//------------------------------------------------------------------------------------
+// Function to measure peak-to-peak voltage and calculate Irms value
+//------------------------------------------------------------------------------------ 
+
+float getIRMS()  // continously sampling max and min values
+{
+  float VPP; // peak-to-peak voltage
+  float VRMS;  // RMS voltage
+  float IRMS; // RMS current
+  int readValue; // value from the sensor
+  int maxValue = 0; // store max value, initialised at lowest value.
+  int minValue = 1024; // store min value, initialised at highest value.
+  int count = 0; // reset count
+  
+  // repeat 100 times for more accurate max and min readings
+  for (int j = 0; j < 100; j++)
+  {
+    // start continuous sampling
+    for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
+    {
+      readValue = analogRead(ACS712_sensor);
+      // check if there is a new maximum and minimum value
+      if (readValue > maxValue)
+      {
+        maxValue = readValue; // record the new maximum sensor value
+      }
+      else if (readValue < minValue)
+      {
+        minValue = readValue; // record the new minimum sensor value
+      }
+    }
+//    Serial.print("Count: ");
+//    Serial.print(count);
+//    Serial.print(", maxValue: ");
+//    Serial.print(maxValue);
+//    Serial.print(", minValue: ");
+//    Serial.println(minValue);
+    delay(3); // pause for 3 ms
+    count++;
+  }
   // subtract min from max and convert range to volts
   VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
   VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
