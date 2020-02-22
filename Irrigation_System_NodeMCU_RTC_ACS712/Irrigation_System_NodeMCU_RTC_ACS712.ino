@@ -1,7 +1,7 @@
 // Irrigation control system
 // Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
-// version 1.4
-// user-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
+// Version 1.4
+// User-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -11,6 +11,7 @@
 #include <FS.h> // SPIFFS library
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
+// Set ESP8266 Access Point SSID and password
 const char* ssid     = "NodeMCU-Irrigation-AP";
 const char* password = "iplantstuff";
 
@@ -36,19 +37,16 @@ const char* PARAM_FLOAT2 = "HighCurrentLimit";
 virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the DS1302 RTC (CLK,DAT,RST)
 
 // Declaring variables for valve relays and initialising to zero
-// Timers - fruit trees
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
 int valveRelay1_OffHour = 0;
 int valveRelay1_OffMin = 0;
 
-// Timers - cypress
 int valveRelay2_OnHour = 0;
 int valveRelay2_OnMin = 0;
 int valveRelay2_OffHour = 0;
 int valveRelay2_OffMin = 0;
 
-// Timers - vegetable garden
 int valveRelay3_OnHour = 0;
 int valveRelay3_OnMin = 0;
 int valveRelay3_OffHour = 0;
@@ -789,7 +787,7 @@ void loop() {
 // Function to measure peak-to-peak voltage and calculate Irms value
 //------------------------------------------------------------------------------------ 
 
-float getIRMS()  // continously sampling max and min values
+float getIRMS()
 {
   float VPP; // peak-to-peak voltage
   float VRMS;  // RMS voltage
@@ -797,13 +795,11 @@ float getIRMS()  // continously sampling max and min values
   int readValue; // value from the sensor
   int maxValue = 0; // store max value, initialised at lowest value.
   int minValue = 1024; // store min value, initialised at highest value.
-  int count = 0; // reset count
-  
-  // repeat 100 times for more accurate max and min readings
-  for (int j = 0; j < 100; j++)
+
+  // controlled sampling rate to avoid Wi-Fi disconnection
+  for (int j = 0; j < 100; j++) // repeat 100 times for more accurate max and min readings
   {
-    // start continuous sampling
-    for (int i = 0; i < NUMBER_OF_SAMPLES; i++)
+    for (int i = 0; i < NUMBER_OF_SAMPLES; i++) // start continuous analog sampling
     {
       readValue = analogRead(ACS712_sensor);
       // check if there is a new maximum and minimum value
@@ -817,7 +813,6 @@ float getIRMS()  // continously sampling max and min values
       }
     }
     delay(3); // pause for 3 ms
-    count++;
   }
   // subtract min from max and convert range to volts
   VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
