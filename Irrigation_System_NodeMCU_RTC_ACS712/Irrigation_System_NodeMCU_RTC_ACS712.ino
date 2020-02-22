@@ -462,10 +462,10 @@ void loop() {
   Serial.println(valveRelay3_OffMin);
   Serial.println("--------------------------------------------------------");
   Serial.print("Low Current Limit: ");
-  Serial.print(LowCurrentLimit, 3);
+  Serial.print(LowCurrentLimit, 2);
   Serial.println(" Amps");
   Serial.print("High Current Limit: ");
-  Serial.print(HighCurrentLimit, 3);
+  Serial.print(HighCurrentLimit, 2);
   Serial.println(" Amps");
   Serial.println("********************************************************");
   }
