@@ -33,3 +33,5 @@ This repo contains Arduino-based projects for solenoid valve irrigation automati
  User-configurable timers to control 3 relays. Current sensor enables deactivation of pump if current limit reached.
   1. #### Using Arduino UNO, DS1302 RTC module and ACS712 current sensor
   2. #### Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
+     #### ADC voltage divider
+   ![alt text](https://github.com/fabfarm/autovalve/blob/master/voltage-divider-NodeMCU-A0.png "NodeMCU ADC Voltage Divider")
