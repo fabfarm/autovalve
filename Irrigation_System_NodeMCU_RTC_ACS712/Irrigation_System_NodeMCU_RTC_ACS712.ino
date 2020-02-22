@@ -14,8 +14,6 @@
 const char* ssid     = "NodeMCU-Irrigation-AP";
 const char* password = "iplantstuff";
 
-AsyncWebServer server(80);
-
 const char* PARAM_INT1 = "valveRelay1_OnHour";
 const char* PARAM_INT2 = "valveRelay1_OnMin";
 const char* PARAM_INT3 = "valveRelay1_OffHour";
@@ -95,6 +93,8 @@ bool valve_3_state = 0; // valve 3 state initialised to OFF
 bool pump_state = 0; // pump state initialised to OFF
 bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
 bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
+
+AsyncWebServer server(80);
 
 // HTML web page to handle input fields
 const char index_html[] PROGMEM = R"rawliteral(
