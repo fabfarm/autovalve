@@ -1,7 +1,7 @@
 // Irrigation control system
 // Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
 // version 1.4
-// control 4 relays, set timers for 3 relays with current sensing.
+// user-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -34,6 +34,67 @@ const char* PARAM_INT12 = "valveRelay3_OffMin";
 const char* PARAM_FLOAT1 = "LowCurrentLimit";
 const char* PARAM_FLOAT2 = "HighCurrentLimit";
 
+// Creation of the Real Time Clock Object
+virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the DS1302 RTC (CLK,DAT,RST)
+
+// Declaring variables for valve relays and initialising to zero
+// Timers - fruit trees
+int valveRelay1_OnHour = 0;
+int valveRelay1_OnMin = 0;
+int valveRelay1_OffHour = 0;
+int valveRelay1_OffMin = 0;
+
+// Timers - cypress
+int valveRelay2_OnHour = 0;
+int valveRelay2_OnMin = 0;
+int valveRelay2_OffHour = 0;
+int valveRelay2_OffMin = 0;
+
+// Timers - vegetable garden
+int valveRelay3_OnHour = 0;
+int valveRelay3_OnMin = 0;
+int valveRelay3_OffHour = 0;
+int valveRelay3_OffMin = 0;
+
+// Declaring variables for lower and upper current limits for pump and initialising to zero
+float LowCurrentLimit = 0; // set the minimum current threshold in Amps
+float HighCurrentLimit = 0; // set the maximum current threshold in Amps
+
+// Set wait times for pump and valve relays activation/deactivation
+unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
+unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
+
+// NodeMCU ESP8266 pump and relay GPIO pins 
+const int pumpRelay = 14; // D5
+const int valveRelay1 = 12; // D6
+const int valveRelay2 = 13; // D7
+const int valveRelay3 = 15; // D8
+
+// ACS712 current sensor
+#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot
+const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
+const int mVperAmp = 100; // Output sensitivity in mV per Amp
+// ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
+
+float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
+// voltage offset at analog input with reference to ground when no signal applied to the sensor.
+
+float AC_current; // measured AC current Irms value (Amps)
+int count = 0; // initialise current limit count to zero
+unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation (due to immediate low or high current)
+
+unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
+unsigned long RTCtimeNow;
+
+unsigned long configTimeInterval = 10000; // set interval in ms
+unsigned long configTimeNow = 0; // stores current value from millis()
+
+bool valve_1_state = 0; // valve 1 state initialised to OFF
+bool valve_2_state = 0; // valve 2 state initialised to OFF
+bool valve_3_state = 0; // valve 3 state initialised to OFF
+bool pump_state = 0; // pump state initialised to OFF
+bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
+bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
 
 // HTML web page to handle input fields
 const char index_html[] PROGMEM = R"rawliteral(
@@ -103,13 +164,13 @@ const char index_html[] PROGMEM = R"rawliteral(
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   
-  <p><b>Set Current Limits (Amps):</b></p>
+  <p><b>Set Current Thresholds (Amps):</b></p>
   <form action="/get" target="hidden-form">
-    LowCurrentLimit (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="6" size="6" min="0" max="99" step="0.001">
+    Low (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form><br>
   <form action="/get" target="hidden-form">
-    HighCurrentLimit (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="6" size="6" min="0" max="99" step="0.001">
+    High (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
     <input type="submit" value="Submit" onclick="submitMessage()">
   </form>
   <iframe style="display:none" name="hidden-form"></iframe>
@@ -203,71 +264,6 @@ String processor(const String& var){
   }
   return String();
 }
-
-
-// Creation of the Real Time Clock Object
-virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the RTC (CLK,DAT,RST)
-
-// Declaring variables for valve relays and initialising to zero
-// Timers - fruit trees
-int valveRelay1_OnHour = 0;
-int valveRelay1_OnMin = 0;
-int valveRelay1_OffHour = 0;
-int valveRelay1_OffMin = 0;
-
-// Timers - cypress
-int valveRelay2_OnHour = 0;
-int valveRelay2_OnMin = 0;
-int valveRelay2_OffHour = 0;
-int valveRelay2_OffMin = 0;
-
-// Timers - vegetable garden
-int valveRelay3_OnHour = 0;
-int valveRelay3_OnMin = 0;
-int valveRelay3_OffHour = 0;
-int valveRelay3_OffMin = 0;
-
-// Declaring variables for lower and upper current limits for pump and initialising to zero
-float LowCurrentLimit = 0; // set the minimum current threshold in Amps
-float HighCurrentLimit = 0; // set the maximum current threshold in Amps
-
-// Set wait times for pump and valve relays activation/deactivation
-unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
-unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
-
-// NodeMCU ESP8266 pump and relay GPIO pins 
-const int pumpRelay = 14; // D5
-const int valveRelay1 = 12; // D6
-const int valveRelay2 = 13; // D7
-const int valveRelay3 = 15; // D8
-
-// ACS712 current sensor
-#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot
-const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
-const int mVperAmp = 100; // Output sensitivity in mV per Amp
-// ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
-
-float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
-// voltage offset at analog input with reference to ground when no signal applied to the sensor.
-
-float AC_current; // measured AC current Irms value (Amps)
-int count = 0; // initialise current limit count to zero
-unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation (due to immediate low or high current)
-
-unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
-unsigned long RTCtimeNow;
-
-unsigned long configTimeInterval = 10000; // set interval in ms
-unsigned long configTimeNow = 0; // stores current value from millis()
-
-bool valve_1_state = 0; // valve 1 state initialised to OFF
-bool valve_2_state = 0; // valve 2 state initialised to OFF
-bool valve_3_state = 0; // valve 3 state initialised to OFF
-bool pump_state = 0; // pump state initialised to OFF
-bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
-bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
-
-
 
 void setup() {
   Serial.begin(9600);
@@ -376,8 +372,7 @@ void setup() {
   });
   server.onNotFound(notFound);
   server.begin();
-
-
+  
   pinMode(valveRelay1, OUTPUT);
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
@@ -794,67 +789,6 @@ void loop() {
 // Function to measure peak-to-peak voltage and calculate Irms value
 //------------------------------------------------------------------------------------ 
 
-//float getIRMS()  // continously sampling max and min values
-//{
-//  float VPP; // peak-to-peak voltage
-//  float VRMS;  // RMS voltage
-//  float IRMS; // RMS current
-//  int readValue; // value from the sensor
-//  int maxValue = 0; // to store max value, initialised at lowest value.
-//  int minValue = 1024; // to store min value, initialised at highest value.
-//
-//
-//    readValue = analogRead(ACS712_sensor);
-//    // check if a new maximum value
-//    if (readValue > maxValue)
-//    {
-//      // record the new maximum value
-//      maxValue = readValue;
-//    }
-//    // check if a new minimum value
-//    if (readValue < minValue)
-//    {
-//      // record the new minimum value
-//      minValue = readValue;
-//    }
-//
-////  uint32_t start_time = millis();
-////  while ((millis() - start_time) < 3000) // sample for 3000 ms or 3 secs
-////  {
-////    readValue = analogRead(ACS712_sensor);
-////    // check if a new maximum value
-////    if (readValue > maxValue)
-////    {
-////      // record the new maximum value
-////      maxValue = readValue;
-////    }
-////    // check if a new minimum value
-////    if (readValue < minValue)
-////    {
-////      // record the new minimum value
-////      minValue = readValue;
-////    }
-////  }
-//
-//  // subtract min from max and convert range to volts
-//  VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
-//  VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
-//  IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
-//
-//  Serial.print("Vpp/V: ");
-//  Serial.print(VPP, 3); // print to 3 decimal places
-//  Serial.print("\tVrms/V: ");
-//  Serial.print(VRMS, 3);  // print to 3 decimal places
-//  Serial.print("\tIrms/A: ");
-//  Serial.println(IRMS, 3);  // print to 3 decimal places
-//  
-//  return IRMS;
-//}
-
-//------------------------------------------------------------------------------------
-// Function to measure peak-to-peak voltage and calculate Irms value
-//------------------------------------------------------------------------------------ 
-
 float getIRMS()  // continously sampling max and min values
 {
   float VPP; // peak-to-peak voltage
@@ -882,12 +816,6 @@ float getIRMS()  // continously sampling max and min values
         minValue = readValue; // record the new minimum sensor value
       }
     }
-//    Serial.print("Count: ");
-//    Serial.print(count);
-//    Serial.print(", maxValue: ");
-//    Serial.print(maxValue);
-//    Serial.print(", minValue: ");
-//    Serial.println(minValue);
     delay(3); // pause for 3 ms
     count++;
   }
@@ -899,9 +827,9 @@ float getIRMS()  // continously sampling max and min values
   Serial.print("Vpp/V: ");
   Serial.print(VPP, 3); // print to 3 decimal places
   Serial.print("\tVrms/V: ");
-  Serial.print(VRMS, 3);  // print to 3 decimal places
+  Serial.print(VRMS, 3);
   Serial.print("\tIrms/A: ");
-  Serial.println(IRMS, 3);  // print to 3 decimal places
+  Serial.println(IRMS, 3);
   
   return IRMS;
 }
