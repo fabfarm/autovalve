@@ -1,7 +1,7 @@
 // Irrigation control system
 // Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
 // Version 1.4
-// User-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
+// Web page-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -477,7 +477,7 @@ void loop() {
   // check valve status and timer to turn Valve Relay 1 ON
   if (valve_1_state == 0)
   {
-    if (myRTC.hours == valveRelay1_OnHour && myRTC.minutes == valveRelay1_OnMin && myRTC.seconds < ((waitTimePumpOn + waitTimeValveOff  + MinTimePumpOperation) / 1000)) // secs less than 6
+    if (myRTC.hours == valveRelay1_OnHour && myRTC.minutes == valveRelay1_OnMin && myRTC.seconds < ((waitTimePumpOn + waitTimeValveOff  + MinTimePumpOperation) / 1000))
     {
     Serial.print("Valve Relay 1 Activation sequence RTC time: ");
     Serial.print(myRTC.hours);  // display the current hour from RTC module                
@@ -792,7 +792,7 @@ float getIRMS()
   float VPP; // peak-to-peak voltage
   float VRMS;  // RMS voltage
   float IRMS; // RMS current
-  int readValue; // value from the sensor
+  int readValue; // analog value from the sensor
   int maxValue = 0; // store max value, initialised at lowest value.
   int minValue = 1024; // store min value, initialised at highest value.
 
