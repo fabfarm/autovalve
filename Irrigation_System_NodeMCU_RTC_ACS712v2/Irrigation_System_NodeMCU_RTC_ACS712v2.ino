@@ -3,9 +3,9 @@
 * Version 2.1
 * Web page-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
 * Changelog:
-* - Continuous current sensing
-* - resume pump operation if still within timer ON and OFF interval
-* - data log per last 24 hours
+* - Continuous current sensing (completed)
+* - resume pump operation if still within timer ON and OFF interval (done separately but needs to be merged): Pump_relay_NodeMCU_DS1302_RTC_resume.ino
+* - data log per last 24 hours (not done yet)
 */
 
 #include <Arduino.h>
