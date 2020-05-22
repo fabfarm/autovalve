@@ -1,3 +1,8 @@
+//
+//
+// *** original version no RTC no current sensing no internet ***
+//
+//
 //This is the code for the Arduino based control board for the automated irrigation system
 //--------------------------------------------------------------------------------------------------
 //Defining the time variables used within the code.

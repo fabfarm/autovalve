@@ -1,4 +1,7 @@
-// Automated pump and valve relays for irrigation system
+// 
+// *** Irrigation on UNO ***
+//
+//Automated pump and valve relays for irrigation system
 // Using Arduino UNO, DS1302 RTC and ACS712 current sensor
 // version 1.1
 //Changelog: Added low and high current limits

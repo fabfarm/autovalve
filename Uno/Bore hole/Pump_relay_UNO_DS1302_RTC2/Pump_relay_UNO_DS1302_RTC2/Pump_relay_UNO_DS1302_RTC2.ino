@@ -1,4 +1,8 @@
-/*
+/* 
+ * 
+ * ***Currentely on Bore Hole pump***
+ * 
+ * 
  * Timer-based automatic pump relay control
  * Using Arduino UNO R3 and DS1302 RTC module
  * version 2.1
@@ -14,7 +18,9 @@ virtuabotixRTC myRTC(5, 6, 7);  // Wiring of the RTC (CLK,DAT,RST)
 
 const int pumpRelay = 8;  // set pump relay pin
 int setMinutes = 0; // set timer minutes for pump activation
-long pumpOperationTime = 40000; // set pump operation time in ms. Note: int datatype can only hold max value 32767.
+int setMinutes1 = 0; // set timer minutes for pump activation
+int setMinutes2 = 0; // set timer minutes for pump activation
+long pumpOperationTime = 20000; // set pump operation time in ms. Note: int datatype can only hold max value 32767.
 
 unsigned long interval = 2000;  // print RTC time every 2s
 unsigned long time_now = 0;
@@ -27,7 +33,7 @@ void setup() {
   
   // Set the current date, and time in the following format:
   // seconds, minutes, hours, day of the week, day of the month, month, year
-  //myRTC.setDS1302Time(50, 59, 19, 5, 26, 1, 2020); // uncomment line, upload to reset RTC and then comment, upload.
+  myRTC.setDS1302Time(50, 59, 22, 5, 1, 5, 2020); // uncomment line, upload to reset RTC and then comment, upload.
   
   myRTC.updateTime(); // update of variables for time or accessing the individual elements.
   
