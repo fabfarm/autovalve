@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>NodeMCU v1.0 12-E Input Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        function submitMessage() {
+            alert("Saved value to NodeMCU SPIFFS");
+            setTimeout(function() {
+                document.location.reload(false);
+            }, 500);
+        }
+
+    </script>
+</head>
+
+<body>
+    <h1>Algarve Fab Farm</h1>
+    <h3>Irrigation System Configuration</h3>
+
+    <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+
+    <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+
+    <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+
+    <p><b>Set Current Thresholds (Amps):</b></p>
+    <form action="/get" target="hidden-form">
+        Low (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        High (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+</html>

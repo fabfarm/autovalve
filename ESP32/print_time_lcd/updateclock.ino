@@ -1,0 +1,4 @@
+void updateclock()
+{
+  myRTC.updateTime();
+}

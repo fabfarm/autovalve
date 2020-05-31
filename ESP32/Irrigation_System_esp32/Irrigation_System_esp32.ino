@@ -13,17 +13,17 @@
 */
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
+#include <ESP8266WiFi.h> //ESP8266 Arduino library with built in reconnect functionality
+#include <ESPAsyncTCP.h> //Async TCP Library for ESP8266 Arduino at https://github.com/me-no-dev/ESPAsyncTCP
 #include <Hash.h> // Arduino Cryptography Library
 #include <ESPAsyncWebServer.h> // Async Web Server for ESP8266
 #include <FS.h> // SPIFFS library
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
 // Set ESP8266 Access Point SSID and password
-const char* ssid     = "NodeMCU-Irrigation-AP";
+const char* ssid     = "NodeMCU-Irrigation-AP"; //const is a variable qualifier that modifies the behavior of the variable, making a variable "read-only".
 const char* password = "iplantstuff";
-
+//why this variables need to be declared here than below again they get set a value? we can't do this at the same time?
 const char* PARAM_INT1 = "valveRelay1_OnHour";
 const char* PARAM_INT2 = "valveRelay1_OnMin";
 const char* PARAM_INT3 = "valveRelay1_OffHour";
@@ -43,9 +43,12 @@ const char* PARAM_FLOAT1 = "LowCurrentLimit";
 const char* PARAM_FLOAT2 = "HighCurrentLimit";
 
 // Creation of the Real Time Clock Object
+// this is not declared before I assume it is because of the library with the same name virtuabotixRTC.h.
 virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the DS1302 RTC (CLK,DAT,RST)
 
 // Declaring variables for valve relays and initialising to zero
+// Why they start with 0?
+//Integers are your primary data-type for number storage
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
 int valveRelay1_OffHour = 0;
@@ -62,6 +65,7 @@ int valveRelay3_OffHour = 0;
 int valveRelay3_OffMin = 0;
 
 // Declaring variables for lower and upper current limits for pump and initialising to zero
+// float stores a number that has a decimal point
 float LowCurrentLimit = 0; // set the minimum current threshold in Amps
 float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 
@@ -76,7 +80,7 @@ const int valveRelay2 = 13; // D7
 const int valveRelay3 = 15; // D8
 
 // ACS712 current sensor
-#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot. check this for understanding why https://arduino.stackexchange.com/questions/19787/esp8266-analog-read-interferes-with-wifi
+#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot check this to understand why https://arduino.stackexchange.com/questions/19787/esp8266-analog-read-interferes-with-wifi
 const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
 const int mVperAmp = 100; // Output sensitivity in mV per Amp
 // ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
@@ -105,83 +109,90 @@ AsyncWebServer server(80);
 
 // HTML web page to handle input fields
 const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html><head>
-  <title>NodeMCU v1.0 12-E Input Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script>
-    function submitMessage() {
-      alert("Saved value to NodeMCU SPIFFS");
-      setTimeout(function(){ document.location.reload(false); }, 500);   
-    }
-  </script></head><body>
-  <h1>Algarve Fab Farm</h1>
-  <h3>Irrigation System Configuration</h3>
-  
-  <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
-  <form action="/get" target="hidden-form">
-    ON hour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    ON mins (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF hour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF mins (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form>
-  
-  <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
-  <form action="/get" target="hidden-form">
-    ON hour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    ON mins (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF hour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF mins (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form>
 
-  <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
-  <form action="/get" target="hidden-form">
-    ON hour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    ON mins (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF hour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    OFF mins (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form>
-  
-  <p><b>Set Current Thresholds (Amps):</b></p>
-  <form action="/get" target="hidden-form">
-    Low (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form><br>
-  <form action="/get" target="hidden-form">
-    High (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
-    <input type="submit" value="Submit" onclick="submitMessage()">
-  </form>
-  <iframe style="display:none" name="hidden-form"></iframe>
-</body></html>)rawliteral";
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>NodeMCU v1.0 12-E Input Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        function submitMessage() {
+            alert("Saved value to NodeMCU SPIFFS");
+            setTimeout(function() {
+                document.location.reload(false);
+            }, 500);
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Algarve Fab Farm</h1>
+    <h3>Irrigation System Configuration</h3>
+    <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay1_OnMin%): <input type="number" name="valveRelay1_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay1_OffHour%): <input type="number" name="valveRelay1_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+    <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay2_OnMin%): <input type="number" name="valveRelay2_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay2_OffHour%): <input type="number" name="valveRelay2_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay2_OffMin%): <input type="number" name="valveRelay2_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+
+    <p><b>Set Relay 3 Timer (Hours & Minutes):</b></p>
+    <form action="/get" target="hidden-form">
+        ON hour (saved value: %valveRelay3_OnHour%): <input type="number" name="valveRelay3_OnHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        ON mins (saved value: %valveRelay3_OnMin%): <input type="number" name="valveRelay3_OnMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF hour (saved value: %valveRelay3_OffHour%): <input type="number" name="valveRelay3_OffHour" maxlength="2" size="2" min="0" max="23">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        OFF mins (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+    <p><b>Set Current Thresholds (Amps):</b></p>
+    <form action="/get" target="hidden-form">
+        Low (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form><br>
+    <form action="/get" target="hidden-form">
+        High (saved value: %HighCurrentLimit%): <input type="number" name="HighCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
+        <input type="submit" value="Submit" onclick="submitMessage()">
+    </form>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+</html>
+)rawliteral";
 
 void notFound(AsyncWebServerRequest *request) {
   request->send(404, "text/plain", "Not found");
