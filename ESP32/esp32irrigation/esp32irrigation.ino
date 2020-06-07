@@ -1,29 +1,75 @@
-/* 
-*
-* *** last version by Shakeel work in progress ***
-*
-* Irrigation control system
-* Using NodeMCU v1.0 12-E, DS1302 RTC and ACS712 current sensor
-* Version 2.1
-* Web page-configurable timers and current thresholds to control 3 valves with automatic current sensing when pump is active.
-* Changelog:
-* - Continuous current sensing (completed)
-* - resume pump operation if still within timer ON and OFF interval (done separately but needs to be merged): Pump_relay_NodeMCU_DS1302_RTC_resume.ino
-* - data log per last 24 hours (not done yet)
-*/
+/****************************************************************************
+ *                                  Aknowledments                           * 
+ *                                  by LucioPGN                             * 
+ ****************************************************************************/
+/*  Up to this date: 07th of June 2020 I don't consider myself a programer 
+ *  so I need to stand on top of giants sholders for my programing projects:
+ *  A Portion of this code was based on Rui Santos Code;
+ *  A Portion of this code was based on Shakeels code for ESP8266 ;
+ *  My contributions: 
+ *    -so far I ported Shakeels code into ESP32;
+ *    -separate functions from shakeels code into files;
+ *    -separated functions from Rui Santos code into files.
+ *  Things I still want to program for my final project:
+ *    -simplify the code creating more functions;
+ *    -try to separate the HTML part for a cleaner code;
+ *    -Improve the appearance/Interface of the code
+ *    -Add readings to HTML
+ *    -Add a log of occurrences like over current
+ *    -Add more safety for the equipment
+ *    -Add a phone interface (APP)
+ *    -Add function to set current time
+ *    -Add renaming function to each relay so one can relate the relay to the area of interest or at least rename relays to actual areas of the farm.
+ * 
+ ****************************************************************************/
+ 
+/*********
+  Rui Santos
+  Complete project details at https://RandomNerdTutorials.com/esp32-esp8266-input-data-html-form/
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files.
+  
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+*********/
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h> //ESP8266 Arduino library with built in reconnect functionality
-#include <ESPAsyncTCP.h> //Async TCP Library for ESP8266 Arduino at https://github.com/me-no-dev/ESPAsyncTCP
-#include <Hash.h> // Arduino Cryptography Library
-#include <ESPAsyncWebServer.h> // Async Web Server for ESP8266
-#include <FS.h> // SPIFFS library
+#ifdef ESP32
+  #include <WiFi.h>
+  #include <AsyncTCP.h>
+  #include <SPIFFS.h>
+#else
+  #include <ESP8266WiFi.h>
+  #include <ESPAsyncTCP.h>
+  #include <Hash.h>
+  #include <FS.h>
+#endif
+#include <ESPAsyncWebServer.h>
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
-// Set ESP8266 Access Point SSID and password
-const char* ssid     = "NodeMCU-Irrigation-AP"; //const is a variable qualifier that modifies the behavior of the variable, making a variable "read-only".
-const char* password = "iplantstuff";
-//why this variables need to be declared here than below again they get set a value? we can't do this at the same time?
+// Set wait times for pump and valve relays activation/deactivation
+unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
+unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
+
+// NodeMCU ESP8266 pump and relay GPIO pins 
+
+const int valveRelay1 = 26; // D6
+const int valveRelay2 = 25; // D7
+const int valveRelay3 = 33; // D8
+const int pumpRelay = 32; // D5
+
+// RCT Pins CLK,DAT,RST
+const int clkPin = 18; // D8
+const int datPin = 19; // D8
+const int rstPin = 21; // D8
+
+// set analog pin connected to the ACS712 current sensor
+const int ACS712_sensor = 34; 
+
+// Creation of the Real Time Clock Object
+virtuabotixRTC myRTC(clkPin, datPin, rstPin); // Wiring of the DS1302 RTC (CLK,DAT,RST)
+
 const char* PARAM_INT1 = "valveRelay1_OnHour";
 const char* PARAM_INT2 = "valveRelay1_OnMin";
 const char* PARAM_INT3 = "valveRelay1_OffHour";
@@ -42,13 +88,42 @@ const char* PARAM_INT12 = "valveRelay3_OffMin";
 const char* PARAM_FLOAT1 = "LowCurrentLimit";
 const char* PARAM_FLOAT2 = "HighCurrentLimit";
 
-// Creation of the Real Time Clock Object
-// this is not declared before I assume it is because of the library with the same name virtuabotixRTC.h.
-virtuabotixRTC myRTC(5, 4, 2);  // (D1,D2,D4) for NodeMCU. Wiring of the DS1302 RTC (CLK,DAT,RST)
+// ACS712 current sensor
+// number of samples taken in a single shot. check this for understanding why https://arduino.stackexchange.com/questions/19787/esp8266-analog-read-interferes-with-wifi
+#define NUMBER_OF_SAMPLES 200 
+// Output sensitivity in mV per Amp
+const int mVperAmp = 100; 
+
+// ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
+float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
+
+// voltage offset at analog input with reference to ground when no signal applied to the sensor.
+float AC_current; // measured AC current Irms value (Amps)
+int count = 0; // initialise current limit count to zero
+unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation (due to immediate low or high current)
+unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
+unsigned long RTCtimeNow;
+unsigned long configTimeInterval = 10000; // set interval in ms
+unsigned long configTimeNow = 0; // stores current value from millis()
+
+bool valve_1_state = 0; // valve 1 state initialised to OFF
+bool valve_2_state = 0; // valve 2 state initialised to OFF
+bool valve_3_state = 0; // valve 3 state initialised to OFF
+bool pump_state = 0; // pump state initialised to OFF
+bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
+bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
+
+AsyncWebServer server(80);
+
+// REPLACE WITH YOUR NETWORK CREDENTIALS
+const char* ssid = "rato";
+const char* password = "imakestuff";
+
+const char* PARAM_STRING = "inputString";
+const char* PARAM_INT = "inputInt";
+const char* PARAM_FLOAT = "inputFloat";
 
 // Declaring variables for valve relays and initialising to zero
-// Why they start with 0?
-//Integers are your primary data-type for number storage
 int valveRelay1_OnHour = 0;
 int valveRelay1_OnMin = 0;
 int valveRelay1_OffHour = 0;
@@ -65,53 +140,18 @@ int valveRelay3_OffHour = 0;
 int valveRelay3_OffMin = 0;
 
 // Declaring variables for lower and upper current limits for pump and initialising to zero
-// float stores a number that has a decimal point
 float LowCurrentLimit = 0; // set the minimum current threshold in Amps
 float HighCurrentLimit = 0; // set the maximum current threshold in Amps
 
-// Set wait times for pump and valve relays activation/deactivation
-unsigned long waitTimePumpOn = 5000; // wait time (ms) from relay activation to pump activation
-unsigned long waitTimeValveOff = 1000; // wait time (ms) from pump deactivation to relay deactivation
-
-// NodeMCU ESP8266 pump and relay GPIO pins 
-const int pumpRelay = 14; // D5
-const int valveRelay1 = 12; // D6
-const int valveRelay2 = 13; // D7
-const int valveRelay3 = 15; // D8
-
-// ACS712 current sensor
-#define NUMBER_OF_SAMPLES 200 // number of samples taken in a single shot check this to understand why https://arduino.stackexchange.com/questions/19787/esp8266-analog-read-interferes-with-wifi
-const int ACS712_sensor = A0; // set analog pin connected to the ACS712 current sensor
-const int mVperAmp = 100; // Output sensitivity in mV per Amp
-// ACS712 datasheet: scale factor is 185 for 5A module, 100 for 20A module and 66 for 30A module
-
-float VRMSoffset = 0.0; //0.005; // set quiescent Vrms output voltage
-// voltage offset at analog input with reference to ground when no signal applied to the sensor.
-
-float AC_current; // measured AC current Irms value (Amps)
-int count = 0; // initialise current limit count to zero
-unsigned long MinTimePumpOperation = 0; // minimum time (ms) for pump operation (due to immediate low or high current)
-
-unsigned long RTCtimeInterval = 3000;  // prints RTC time every interval (ms)
-unsigned long RTCtimeNow;
-
-unsigned long configTimeInterval = 10000; // set interval in ms
-unsigned long configTimeNow = 0; // stores current value from millis()
-
-bool valve_1_state = 0; // valve 1 state initialised to OFF
-bool valve_2_state = 0; // valve 2 state initialised to OFF
-bool valve_3_state = 0; // valve 3 state initialised to OFF
-bool pump_state = 0; // pump state initialised to OFF
-bool LowCurrentLimit_state = 0; // initialise low current limit state (0 = normal, 1 = low)
-bool HighCurrentLimit_state = 0; // initialise high current limit state (0 = normal, 1 = high)
-
-AsyncWebServer server(80);
-
-// HTML web page to handle input fields
+// HTML web page to handle input fields bellow:
+// (valveRelay1_OnHour, valveRelay1_OnMin, valveRelay1_OffHour, valveRelay1_OffMin)
+// (valveRelay1_OnHour, valveRelay1_OnMin, valveRelay1_OffHour, valveRelay1_OffMin)
+// (valveRelay1_OnHour, valveRelay1_OnMin, valveRelay1_OffHour, valveRelay1_OffMin)
+// (LowCurrentLimit,HighCurrentLimit)
 const char index_html[] PROGMEM = R"rawliteral(
-
 <!DOCTYPE HTML>
 <html>
+
 <head>
     <title>NodeMCU v1.0 12-E Input Form</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -125,9 +165,11 @@ const char index_html[] PROGMEM = R"rawliteral(
 
     </script>
 </head>
+
 <body>
     <h1>Algarve Fab Farm</h1>
     <h3>Irrigation System Configuration</h3>
+
     <p><b>Set Relay 1 Timer (Hours & Minutes):</b></p>
     <form action="/get" target="hidden-form">
         ON hour (saved value: %valveRelay1_OnHour%): <input type="number" name="valveRelay1_OnHour" maxlength="2" size="2" min="0" max="23">
@@ -145,6 +187,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         OFF mins (saved value: %valveRelay1_OffMin%): <input type="number" name="valveRelay1_OffMin" maxlength="2" size="2" min="0" max="59">
         <input type="submit" value="Submit" onclick="submitMessage()">
     </form>
+
     <p><b>Set Relay 2 Timer (Hours & Minutes):</b></p>
     <form action="/get" target="hidden-form">
         ON hour (saved value: %valveRelay2_OnHour%): <input type="number" name="valveRelay2_OnHour" maxlength="2" size="2" min="0" max="23">
@@ -180,6 +223,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         OFF mins (saved value: %valveRelay3_OffMin%): <input type="number" name="valveRelay3_OffMin" maxlength="2" size="2" min="0" max="59">
         <input type="submit" value="Submit" onclick="submitMessage()">
     </form>
+
     <p><b>Set Current Thresholds (Amps):</b></p>
     <form action="/get" target="hidden-form">
         Low (saved value: %LowCurrentLimit%): <input type="number" name="LowCurrentLimit" maxlength="5" size="5" min="0" max="99" step="0.01">
@@ -191,163 +235,35 @@ const char index_html[] PROGMEM = R"rawliteral(
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
 </body>
+
 </html>
 )rawliteral";
 
-void notFound(AsyncWebServerRequest *request) {
-  request->send(404, "text/plain", "Not found");
-}
-
-String readFile(fs::FS &fs, const char * path){
-  //Serial.printf("Reading file: %s\r\n", path);
-  File file = fs.open(path, "r");
-  if(!file || file.isDirectory()){
-    Serial.println("- empty file or failed to open file");
-    return String();
-  }
-  //Serial.println("- read from file:");
-  String fileContent;
-  while(file.available()){
-    fileContent+=String((char)file.read());
-  }
-  //Serial.println(fileContent);
-  return fileContent;
-}
-
-void writeFile(fs::FS &fs, const char * path, const char * message){
-  Serial.printf("Writing file: %s\r\n", path);
-  File file = fs.open(path, "w");
-  if(!file){
-    Serial.println("- failed to open file for writing");
-    return;
-  }
-  if(file.print(message)){
-    Serial.println("- file written");
-  } else {
-    Serial.println("- write failed");
-  }
-}
-
-// Replaces placeholder with saved values
-String processor(const String& var){
-  //Serial.println(var);
-  if(var == "valveRelay1_OnHour"){
-    return readFile(SPIFFS, "/valveRelay1_OnHour.txt");
-  }
-  else if(var == "valveRelay1_OnMin"){
-    return readFile(SPIFFS, "/valveRelay1_OnMin.txt");
-  }
-  else if(var == "valveRelay1_OffHour"){
-    return readFile(SPIFFS, "/valveRelay1_OffHour.txt");
-  }
-  else if(var == "valveRelay1_OffMin"){
-    return readFile(SPIFFS, "/valveRelay1_OffMin.txt");
-  }
-  
-  else if(var == "valveRelay2_OnHour"){
-    return readFile(SPIFFS, "/valveRelay2_OnHour.txt");
-  }
-  else if(var == "valveRelay2_OnMin"){
-    return readFile(SPIFFS, "/valveRelay2_OnMin.txt");
-  }
-  else if(var == "valveRelay2_OffHour"){
-    return readFile(SPIFFS, "/valveRelay2_OffHour.txt");
-  }
-  else if(var == "valveRelay2_OffMin"){
-    return readFile(SPIFFS, "/valveRelay2_OffMin.txt");
-  }
-  
-  else if(var == "valveRelay3_OnHour"){
-    return readFile(SPIFFS, "/valveRelay3_OnHour.txt");
-  }
-  else if(var == "valveRelay3_OnMin"){
-    return readFile(SPIFFS, "/valveRelay3_OnMin.txt");
-  }
-  else if(var == "valveRelay3_OffHour"){
-    return readFile(SPIFFS, "/valveRelay3_OffHour.txt");
-  }
-  else if(var == "valveRelay3_OffMin"){
-    return readFile(SPIFFS, "/valveRelay3_OffMin.txt");
-  }
-  
-  else if(var == "LowCurrentLimit"){
-    return readFile(SPIFFS, "/LowCurrentLimit.txt");
-  }
-  else if(var == "HighCurrentLimit"){
-    return readFile(SPIFFS, "/HighCurrentLimit.txt");
-  }
-  // return the RTC time
-  else if(var == "RTChour"){
-    return readFile(SPIFFS, "/HighCurrentLimit.txt");
-  }
-  return String();
-}
-
-
-//------------------------------------------------------------------------------------
-// Function to measure ADC and calculate Irms value
-//------------------------------------------------------------------------------------ 
-
-float getIRMS()
-{
-  float VPP; // peak-to-peak voltage
-  float VRMS;  // RMS voltage
-  float IRMS; // RMS current
-  int readValue; // analog value from the sensor
-  int maxValue = 0; // store max value, initialised at lowest value.
-  int minValue = 1024; // store min value, initialised at highest value.
-
-  // controlled sampling rate to avoid Wi-Fi disconnection
-  for (int j = 0; j < 100; j++) // repeat 100 times for more accurate max and min readings
-  {
-    for (int i = 0; i < NUMBER_OF_SAMPLES; i++) // start continuous analog sampling
-    {
-      readValue = analogRead(ACS712_sensor);
-      // check if there is a new maximum and minimum value
-      if (readValue > maxValue)
-      {
-        maxValue = readValue; // record the new maximum sensor value
-      }
-      else if (readValue < minValue)
-      {
-        minValue = readValue; // record the new minimum sensor value
-      }
-    }
-    delay(3); // pause for 3 ms
-  }
-  // subtract min from max and convert range to volts
-  VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
-  VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
-  IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
-  
-//  Serial.print("Vpp/V: ");
-//  Serial.print(VPP, 3); // print to 3 decimal places
-//  Serial.print("\tVrms/V: ");
-//  Serial.print(VRMS, 3);
-  Serial.print("\tIrms/A: ");
-  Serial.println(IRMS, 3);
-  
-  return IRMS;
-}
-
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   // Initialize SPIFFS
+  #ifdef ESP32
+    if(!SPIFFS.begin(true)){
+      Serial.println("An Error has occurred while mounting SPIFFS");
+      return;
+    }
+  #else
     if(!SPIFFS.begin()){
       Serial.println("An Error has occurred while mounting SPIFFS");
       return;
     }
-  
+  #endif
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("WiFi Failed!");
+    return;
+  }
   Serial.println();
-  Serial.println("Setting AP (Access Point...");
-  // Remove the password parameter, if you want the AP (Access Point) to be open
-  WiFi.softAP(ssid, password);
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
-  // Print ESP8266 Local IP Address
+  Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
-  
+
   // Send web page with input fields to client
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send_P(200, "text/html", index_html, processor);
@@ -356,7 +272,7 @@ void setup() {
   // Send a GET request to <ESP_IP>/get?inputString=<inputMessage>
   server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
     String inputMessage;
-    // GET valveRelay1_OnHour value on <ESP_IP>/get?valveRelay1_OnHour=<inputMessage>
+        // GET valveRelay1_OnHour value on <ESP_IP>/get?valveRelay1_OnHour=<inputMessage>
     if (request->hasParam(PARAM_INT1)) {
       inputMessage = request->getParam(PARAM_INT1)->value();
       writeFile(SPIFFS, "/valveRelay1_OnHour.txt", inputMessage.c_str());
@@ -437,8 +353,7 @@ void setup() {
   });
   server.onNotFound(notFound);
   server.begin();
-  
-  pinMode(valveRelay1, OUTPUT);
+    pinMode(valveRelay1, OUTPUT);
   pinMode(valveRelay2, OUTPUT);
   pinMode(valveRelay3, OUTPUT);
   pinMode(pumpRelay, OUTPUT);
