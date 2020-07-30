@@ -35,16 +35,10 @@
 *********/
 
 #include <Arduino.h>
-#ifdef ESP32
-  #include <WiFi.h>
-  #include <AsyncTCP.h>
-  #include <SPIFFS.h>
-#else
   #include <ESP8266WiFi.h>
   #include <ESPAsyncTCP.h>
   #include <Hash.h>
   #include <FS.h>
-#endif
 #include <ESPAsyncWebServer.h>
 #include <virtuabotixRTC.h> // DS1302 RTC module library
 
@@ -820,4 +814,144 @@ void loop() {
  }
 }
 
+}
+
+
+String readFile(fs::FS &fs, const char * path){
+  Serial.printf("Reading file: %s\r\n", path);
+  File file = fs.open(path, "r");
+  if(!file || file.isDirectory()){
+    Serial.println("- empty file or failed to open file");
+    return String();
+  }
+  Serial.println("- read from file:");
+  String fileContent;
+  while(file.available()){
+    fileContent+=String((char)file.read());
+  }
+  Serial.println(fileContent);
+  return fileContent;
+}
+
+void writeFile(fs::FS &fs, const char * path, const char * message){
+  Serial.printf("Writing file: %s\r\n", path);
+  File file = fs.open(path, "w");
+  if(!file){
+    Serial.println("- failed to open file for writing");
+    return;
+  }
+  if(file.print(message)){
+    Serial.println("- file written");
+  } else {
+    Serial.println("- write failed");
+  }
+}
+
+// Replaces placeholder with saved values
+String processor(const String& var){
+  //Serial.println(var);
+  if(var == "valveRelay1_OnHour"){
+    return readFile(SPIFFS, "/valveRelay1_OnHour.txt");
+  }
+  else if(var == "valveRelay1_OnMin"){
+    return readFile(SPIFFS, "/valveRelay1_OnMin.txt");
+  }
+  else if(var == "valveRelay1_OffHour"){
+    return readFile(SPIFFS, "/valveRelay1_OffHour.txt");
+  }
+  else if(var == "valveRelay1_OffMin"){
+    return readFile(SPIFFS, "/valveRelay1_OffMin.txt");
+  }
+  
+  else if(var == "valveRelay2_OnHour"){
+    return readFile(SPIFFS, "/valveRelay2_OnHour.txt");
+  }
+  else if(var == "valveRelay2_OnMin"){
+    return readFile(SPIFFS, "/valveRelay2_OnMin.txt");
+  }
+  else if(var == "valveRelay2_OffHour"){
+    return readFile(SPIFFS, "/valveRelay2_OffHour.txt");
+  }
+  else if(var == "valveRelay2_OffMin"){
+    return readFile(SPIFFS, "/valveRelay2_OffMin.txt");
+  }
+  
+  else if(var == "valveRelay3_OnHour"){
+    return readFile(SPIFFS, "/valveRelay3_OnHour.txt");
+  }
+  else if(var == "valveRelay3_OnMin"){
+    return readFile(SPIFFS, "/valveRelay3_OnMin.txt");
+  }
+  else if(var == "valveRelay3_OffHour"){
+    return readFile(SPIFFS, "/valveRelay3_OffHour.txt");
+  }
+  else if(var == "valveRelay3_OffMin"){
+    return readFile(SPIFFS, "/valveRelay3_OffMin.txt");
+  }
+  
+  else if(var == "LowCurrentLimit"){
+    return readFile(SPIFFS, "/LowCurrentLimit.txt");
+  }
+  else if(var == "HighCurrentLimit"){
+    return readFile(SPIFFS, "/HighCurrentLimit.txt");
+  }
+  // return the RTC time
+  else if(var == "RTChour"){
+    return readFile(SPIFFS, "/HighCurrentLimit.txt");
+  }
+  return String();
+}
+
+void notFound(AsyncWebServerRequest *request) {
+  request->send(404, "text/plain", "Not found");
+}
+
+void notFound(AsyncWebServerRequest *request) {
+  request->send(404, "text/plain", "Not found");
+}
+
+//------------------------------------------------------------------------------------
+// Function to measure ADC and calculate Irms value
+//------------------------------------------------------------------------------------ 
+
+float getIRMS()
+{
+  float VPP; // peak-to-peak voltage
+  float VRMS;  // RMS voltage
+  float IRMS; // RMS current
+  int readValue; // analog value from the sensor
+  int maxValue = 0; // store max value, initialised at lowest value.
+  int minValue = 1024; // store min value, initialised at highest value.
+
+  // controlled sampling rate to avoid Wi-Fi disconnection
+  for (int j = 0; j < 100; j++) // repeat 100 times for more accurate max and min readings
+  {
+    for (int i = 0; i < NUMBER_OF_SAMPLES; i++) // start continuous analog sampling
+    {
+      readValue = analogRead(ACS712_sensor);
+      // check if there is a new maximum and minimum value
+      if (readValue > maxValue)
+      {
+        maxValue = readValue; // record the new maximum sensor value
+      }
+      else if (readValue < minValue)
+      {
+        minValue = readValue; // record the new minimum sensor value
+      }
+    }
+    delay(3); // pause for 3 ms
+  }
+  // subtract min from max and convert range to volts
+  VPP = ((maxValue - minValue) * 5.0) / 1024.0; // find peak-to-peak voltage
+  VRMS = ((VPP / 2.0) * 0.707) - VRMSoffset; // divide by 2 to get peak voltage. 1 ÷ √(2) is 0.707
+  IRMS = (VRMS * 1000.0) / mVperAmp; // first, multiply by 1000 to convert to mV
+  
+//  Serial.print("Vpp/V: ");
+//  Serial.print(VPP, 3); // print to 3 decimal places
+//  Serial.print("\tVrms/V: ");
+//  Serial.print(VRMS, 3);
+  Serial.print("\tIrms/A: ");
+  Serial.println(IRMS, 3);
+  
+  return IRMS;
 }
