@@ -240,7 +240,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   // Initialize SPIFFS
   #ifdef ESP32
     if(!SPIFFS.begin(true)){
